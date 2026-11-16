@@ -1,0 +1,136 @@
+.year-chart {
+  min-width: 0;
+}
+
+.year-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #777;
+  font-size: 11px;
+}
+
+.year-legend-bar {
+  display: inline-block;
+  width: 12px;
+  height: 9px;
+  margin-right: 5px;
+  border-radius: 2px;
+  background: #777;
+}
+
+.year-legend-line {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  width: 16px;
+  height: 2px;
+  margin-right: 5px;
+  background: #171717;
+}
+
+.year-legend-line::after {
+  position: absolute;
+  top: -2px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #171717;
+  content: '';
+}
+
+.year-chart-wrap {
+  min-width: 0;
+  margin-top: 13px;
+}
+
+.year-chart-scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+  padding-bottom: 5px;
+}
+
+.year-chart-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.year-chart-scroll:focus-visible {
+  outline: 2px solid var(--ledger-ink);
+  outline-offset: 3px;
+}
+
+.year-chart-canvas {
+  position: relative;
+  height: 209px;
+}
+
+.year-chart-canvas svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.year-chart-month {
+  position: absolute;
+  top: 176px;
+  width: 82px;
+  color: #777;
+  text-align: center;
+  font-size: 11px;
+}
+
+.year-chart-month[aria-pressed='true'] {
+  color: #171717;
+  font-weight: 800;
+}
+
+.year-chart-month.is-missing {
+  color: #c5c5c5;
+}
+
+.year-chart-month::before,
+.year-chart-controls button::before {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 44px;
+  content: '';
+  transform: translateY(-50%);
+}
+
+.year-chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.year-chart-controls button {
+  position: relative;
+  padding: 6px 13px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 8px;
+  color: #555;
+  background: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.year-chart-controls > span {
+  color: #aaa;
+  font-size: 10px;
+  text-align: center;
+}
+
+.year-chart-note {
+  margin: 15px 0 0;
+  color: #aaa;
+  font-size: 10px;
+  line-height: 1.7;
+}
