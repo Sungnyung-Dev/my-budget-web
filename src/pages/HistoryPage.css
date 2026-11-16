@@ -1,0 +1,386 @@
+.history-layout {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.history-layout .main-shell {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--bottom-nav-height));
+  min-height: 0;
+}
+
+.history-layout .main-content {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  max-width: 580px;
+  margin-bottom: 74px; /* FAB 45px + 탭과의 간격 13px + 스크롤 간격 16px */
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  padding: calc(16px + env(safe-area-inset-top, 0px))
+    max(22px, env(safe-area-inset-right, 0px))
+    24px
+    max(22px, env(safe-area-inset-left, 0px));
+}
+
+.history-layout .main-content::-webkit-scrollbar {
+  display: none;
+}
+
+.history-layout .page-footer {
+  display: none;
+}
+
+.history-page {
+  color: #161616;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+}
+
+.history-page .page-header {
+  margin-bottom: 24px;
+}
+
+.history-page .eyebrow {
+  margin: 0 0 8px;
+  color: #a3a3a3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.history-page h1 {
+  font-size: 29px;
+  font-weight: 780;
+  line-height: normal;
+  letter-spacing: -1.2px;
+}
+
+.history-page .page-description {
+  margin: 7px 0 0;
+  color: #999;
+  font-size: 11px;
+  line-height: normal;
+}
+
+.period-toolbar.is-ledger {
+  margin: 0 0 18px;
+}
+
+.period-toolbar.is-ledger .period-nav {
+  width: 100%;
+  justify-content: space-between;
+  gap: 0;
+  margin: 0;
+}
+
+.period-toolbar.is-ledger .period-label {
+  color: #161616;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.5px;
+}
+
+/* 원본의 31px 원형 버튼 모양을 유지하면서 터치 영역은 44px로 확보합니다. */
+.period-toolbar.is-ledger .icon-button {
+  margin: -6.5px;
+  background: transparent;
+}
+
+.ledger-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 50%;
+  color: #555;
+  background: #f5f5f5;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.summary-strip.is-ledger {
+  margin: 0 0 22px;
+  padding: 16px 5px;
+  border: 0;
+  border-radius: 15px;
+  background: #f6f6f6;
+}
+
+.summary-strip.is-ledger > div {
+  min-width: 0;
+  padding: 0 3px;
+}
+
+.summary-strip.is-ledger > div + div {
+  border-left-color: #e3e3e3;
+}
+
+.summary-strip.is-ledger dt {
+  margin-bottom: 8px;
+  color: #888;
+  font-size: 10px;
+}
+
+.summary-strip.is-ledger dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.55px;
+  white-space: nowrap;
+}
+
+.ledger-weekdays,
+.ledger-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.ledger-weekdays {
+  margin-bottom: 5px;
+  color: #999;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.ledger-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 45px;
+  color: #252525;
+}
+
+.ledger-day-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  font-size: 13px;
+}
+
+.ledger-day[aria-pressed='true'] .ledger-day-number {
+  color: #fff;
+  background: #1b1b1b;
+  font-weight: 700;
+}
+
+.ledger-day-dots {
+  display: flex;
+  gap: 3px;
+  height: 4px;
+}
+
+.ledger-calendar-legend {
+  margin: 13px 0 22px;
+  color: #aaa;
+  text-align: right;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.ledger-divider {
+  margin: 16px 0 19px;
+  border-top: 1px solid #eee;
+}
+
+.ledger-day-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 21px 0 13px;
+}
+
+.ledger-day-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 760;
+  letter-spacing: -.5px;
+}
+
+.ledger-day-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 7px;
+  color: #888;
+  font-size: 11px;
+}
+
+.ledger-count {
+  flex-shrink: 0;
+  color: #999;
+  font-size: 11px;
+}
+
+.ledger-empty {
+  padding: 23px 11px;
+  border: 1px dashed #e5e5e5;
+  border-radius: 13px;
+  color: #999;
+  background: #fafafa;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+/* 탭 높이에 Safe Area를 포함합니다. 스크롤 영역은 FAB 위에서 끝납니다. */
+.ledger-fab-position {
+  position: fixed;
+  z-index: 9;
+  right: 0;
+  bottom: calc(var(--bottom-nav-height) + 13px);
+  left: 0;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 580px;
+  margin-inline: auto;
+  padding-right: max(22px, env(safe-area-inset-right, 0px));
+  padding-left: max(22px, env(safe-area-inset-left, 0px));
+  pointer-events: none;
+}
+
+.ledger-fab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  color: #fff;
+  background: #171717;
+  box-shadow: 0 5px 13px #0003;
+  font-size: 29px;
+  font-weight: 300;
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.history-layout .update-notice {
+  bottom: calc(var(--bottom-nav-height) + 74px);
+}
+
+.ledger-dialog {
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: 440px;
+  max-height: 85dvh;
+  margin: 0 auto;
+  padding: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  color: #161616;
+  background: #fff;
+}
+
+.ledger-dialog::backdrop {
+  background: #0006;
+}
+
+.ledger-dialog-content {
+  padding: 12px max(22px, env(safe-area-inset-right, 0px))
+    calc(29px + env(safe-area-inset-bottom, 0px))
+    max(22px, env(safe-area-inset-left, 0px));
+}
+
+.ledger-dialog-grab {
+  width: 34px;
+  height: 4px;
+  margin: 0 auto 19px;
+  border-radius: 5px;
+  background: #ddd;
+}
+
+.ledger-dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 21px;
+}
+
+.ledger-dialog-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -.6px;
+}
+
+.ledger-dialog-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #666;
+  background: #f3f3f3;
+  font-size: 18px;
+}
+
+.ledger-dialog p {
+  margin: 0 0 22px;
+  color: #888;
+  font-size: 12px;
+  line-height: 1.9;
+}
+
+.ledger-dialog-confirm {
+  width: 100%;
+  padding: 15px;
+  border-radius: 11px;
+  color: white;
+  background: #171717;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media (min-width: 1024px) {
+  .history-layout .main-content {
+    max-width: 1000px;
+    padding: 32px 44px 24px;
+  }
+
+  .history-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 40px;
+  }
+
+  .history-daily-column .ledger-divider {
+    margin-top: 0;
+  }
+
+  .history-layout .ledger-fab-position {
+    left: 232px;
+    max-width: 1000px;
+    padding-inline: 44px;
+  }
+}
+
+@media (max-width: 1023px) and (max-height: 650px) {
+  .history-layout .main-content {
+    padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  }
+
+  .history-page .page-header {
+    margin-bottom: 13px;
+  }
+
+  .summary-strip.is-ledger {
+    margin-bottom: 13px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .history-layout .ledger-fab-position {
+    left: 256px;
+  }
+}
