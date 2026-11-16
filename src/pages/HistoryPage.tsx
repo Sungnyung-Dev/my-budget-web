@@ -1,7 +1,8 @@
-import { useRef } from 'react'
+import { useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
 import { PeriodNav } from '../components/PeriodNav'
 import { Summary } from '../components/Summary'
+import { TransactionEditor } from '../components/TransactionEditor'
 import { getCalendarDays } from '../lib/dates'
 import './HistoryPage.css'
 
@@ -13,11 +14,12 @@ export function HistoryPage({ month, onMonthChange, selectedDay, onSelectDay }: 
   selectedDay: number
   onSelectDay: (day: number) => void
 }) {
-  const addDialog = useRef<HTMLDialogElement>(null)
+  const [adding, setAdding] = useState(false)
   const today = new Date()
   const year = month.getFullYear()
   const monthNumber = month.getMonth() + 1
   const selectedDate = new Date(year, month.getMonth(), selectedDay)
+  const dateKey = `${year}-${String(monthNumber).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`
   const days = getCalendarDays(month)
 
   return (
@@ -76,7 +78,7 @@ export function HistoryPage({ month, onMonthChange, selectedDay, onSelectDay }: 
           </div>
           <div className="ledger-empty">
             선택한 날짜에 거래가 없습니다.<br />
-            거래 추가 기능은 준비 중입니다.
+            + 버튼으로 거래 입력 화면을 열 수 있습니다.
           </div>
         </section>
       </div>
@@ -87,31 +89,12 @@ export function HistoryPage({ month, onMonthChange, selectedDay, onSelectDay }: 
           className="ledger-fab"
           aria-label="선택한 날짜에 거래 추가"
           aria-haspopup="dialog"
-          aria-controls="transaction-placeholder"
-          onClick={() => addDialog.current?.showModal()}
+          aria-controls={adding ? 'transaction-editor' : undefined}
+          onClick={() => setAdding(true)}
         ><span aria-hidden="true">+</span></button>
       </div>
 
-      <dialog
-        ref={addDialog}
-        id="transaction-placeholder"
-        className="ledger-dialog"
-        aria-labelledby="transaction-placeholder-title"
-        aria-describedby="transaction-placeholder-description"
-        onClick={(event) => {
-          if (event.target === event.currentTarget) event.currentTarget.close()
-        }}
-      >
-        <div className="ledger-dialog-content">
-          <div className="ledger-dialog-grab" />
-          <div className="ledger-dialog-heading">
-            <h2 id="transaction-placeholder-title">거래 추가</h2>
-            <button type="button" className="ledger-dialog-close" aria-label="거래 추가 안내 닫기" onClick={() => addDialog.current?.close()}>×</button>
-          </div>
-          <p id="transaction-placeholder-description">거래 입력 기능은 준비 중입니다.<br />현재는 화면 구성과 날짜 선택을 확인할 수 있어요.</p>
-          <button type="button" className="ledger-dialog-confirm" onClick={() => addDialog.current?.close()}>확인</button>
-        </div>
-      </dialog>
+      {adding && <TransactionEditor date={dateKey} onClose={() => setAdding(false)} />}
     </article>
   )
 }
