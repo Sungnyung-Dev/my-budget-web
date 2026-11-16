@@ -1,0 +1,196 @@
+.category-sheet {
+  position: fixed;
+  inset: auto 0 var(--category-keyboard-bottom, 0px);
+  width: 100%;
+  max-width: 580px;
+  max-height: calc(var(--category-viewport-height, 100dvh) * .92);
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  color: var(--ledger-ink);
+  background: #fff;
+  font: inherit;
+}
+
+.category-sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-sheet::backdrop {
+  background: #0006;
+}
+
+.category-sheet-header {
+  flex-shrink: 0;
+  padding: 12px max(22px, env(safe-area-inset-right, 0px)) 0
+    max(22px, env(safe-area-inset-left, 0px));
+}
+
+.category-sheet-grab {
+  width: 34px;
+  height: 4px;
+  margin: 0 auto 19px;
+  border-radius: 5px;
+  background: #ddd;
+}
+
+.category-sheet-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 21px;
+}
+
+.category-sheet-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 750;
+  letter-spacing: -.6px;
+}
+
+.category-sheet-close {
+  position: relative;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #666;
+  background: #f3f3f3;
+  font-size: 18px;
+}
+
+.category-sheet-close::before {
+  position: absolute;
+  inset: -7px;
+  content: '';
+}
+
+.category-sheet-body {
+  min-height: 0;
+  padding: 0 max(22px, env(safe-area-inset-right, 0px))
+    calc(29px + env(safe-area-inset-bottom, 0px))
+    max(22px, env(safe-area-inset-left, 0px));
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+}
+
+.category-sheet-body::-webkit-scrollbar {
+  display: none;
+}
+
+.category-field-label {
+  display: block;
+  margin: 0 0 8px;
+  color: #777;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.category-fixed-type {
+  margin-bottom: 20px;
+  padding: 12px 13px;
+  border-radius: 10px;
+  background: #f7f7f7;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.category-name-input {
+  width: 100%;
+  height: 43px;
+  margin: 0 0 19px;
+  padding: 12px 13px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 10px;
+  color: #171717;
+  background: #f8f8f8;
+  font: inherit;
+  font-size: 13px;
+}
+
+.category-name-input::placeholder {
+  color: #aaa;
+}
+
+.category-name-input:focus-visible {
+  outline: 2px solid var(--ledger-ink);
+  outline-offset: 2px;
+}
+
+.category-error {
+  min-height: 14px;
+  margin: -5px 0 8px;
+  color: #a93030;
+  font-size: 11px;
+}
+
+.category-connection,
+.category-warning {
+  margin: 0 0 12px;
+  padding: 11px;
+  border-radius: 9px;
+  color: var(--ledger-small);
+  background: #f7f7f7;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.category-warning {
+  margin-top: 10px;
+}
+
+.category-primary {
+  width: 100%;
+  min-height: 46px;
+  padding: 15px;
+  border-radius: 11px;
+  color: #fff;
+  background: #171717;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.category-secondary {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 9px;
+  padding: 13px;
+  border: 1px solid #ededed;
+  border-radius: 11px;
+  color: #555;
+  background: #fff;
+  font-size: 12px;
+}
+
+.category-delete-confirm {
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 11px;
+  background: #fafafa;
+  font-size: 12px;
+}
+
+.category-delete-confirm h3 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 400;
+}
+
+.category-delete-confirm p {
+  margin: 9px 0 12px;
+  color: var(--ledger-small);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+@media (pointer: coarse) {
+  .category-name-input {
+    font-size: 16px; /* iPhone에서 입력할 때 자동 확대를 방지합니다. */
+  }
+}

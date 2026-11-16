@@ -9,7 +9,7 @@ export function AppLayout({ page, onNavigate, children }: {
   children: ReactNode
 }) {
   return (
-    <div className={`app-layout ${page !== 'settings' ? `ledger-layout ${page}-layout` : ''}`}>
+    <div className={`app-layout ledger-layout ${page}-layout`}>
       <a className="skip-link" href="#main-content">본문으로 건너뛰기</a>
       <aside className="sidebar">
         <a

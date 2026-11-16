@@ -1,0 +1,141 @@
+.settings-label {
+  margin: 24px 0 6px;
+  color: var(--ledger-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 2px;
+  border-bottom: 1px solid var(--ledger-line);
+  color: var(--ledger-ink);
+  background: #fff;
+  text-align: left;
+  font-size: 13px;
+}
+
+.settings-values {
+  margin: 0;
+}
+
+.settings-values dd,
+.settings-value {
+  margin: 0;
+  color: var(--ledger-muted);
+  text-align: right;
+  font-size: 11px;
+}
+
+.settings-arrow {
+  flex-shrink: 0;
+  color: #aaa;
+  font-size: 20px;
+}
+
+.settings-note {
+  margin: 15px 0 0;
+  color: #aaa;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.categories-back {
+  position: relative;
+  margin-bottom: 18px;
+  color: #666;
+  font-size: 12px;
+}
+
+.categories-group-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 23px 0 8px;
+}
+
+.categories-group-heading h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.categories-add {
+  position: relative;
+  padding: 8px 11px;
+  border-radius: 8px;
+  color: #333;
+  background: var(--ledger-card);
+  font-size: 11px;
+}
+
+.categories-back::before,
+.categories-add::before,
+.categories-preview::before {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  height: 44px;
+  content: '';
+  transform: translateY(-50%);
+}
+
+.categories-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.categories-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 1px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: left;
+}
+
+.categories-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.categories-count {
+  margin-left: 8px;
+  color: var(--ledger-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.categories-preview {
+  position: relative;
+  display: block;
+  margin: 15px auto 0;
+  color: #666;
+  font-size: 11px;
+}
+
+@media (min-width: 1024px) {
+  .settings-workspace,
+  .categories-workspace {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 40px;
+  }
+
+  .settings-workspace > div > section:first-child .settings-label,
+  .categories-group-heading {
+    margin-top: 0;
+  }
+}
