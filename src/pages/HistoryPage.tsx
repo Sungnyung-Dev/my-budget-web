@@ -21,7 +21,7 @@ export function HistoryPage({ month, onMonthChange, selectedDay, onSelectDay }: 
   const days = getCalendarDays(month)
 
   return (
-    <article className="history-page">
+    <article className="ledger-page history-page">
       <PageHeader
         eyebrow="MY LEDGER"
         title="내역"

@@ -1,7 +1,6 @@
-import { EmptyState } from '../components/EmptyState'
-import { Icon } from '../components/Icon'
 import { PageHeader } from '../components/PageHeader'
 import { PeriodNav } from '../components/PeriodNav'
+import './HomePage.css'
 
 export function HomePage({ month, onMonthChange, onHistory }: {
   month: Date
@@ -9,32 +8,51 @@ export function HomePage({ month, onMonthChange, onHistory }: {
   onHistory: () => void
 }) {
   return (
-    <>
-      <PageHeader title="홈" description="이번 달 가계부를 한눈에 살펴보세요." />
-      <PeriodNav month={month} onChange={onMonthChange} />
-      <div className="overview-grid">
-        <section className="expense-card" aria-labelledby="expense-heading">
-          <div className="card-label"><h2 id="expense-heading">이번 달 지출</h2><span className="card-symbol"><Icon name="arrowUp" size={18} /></span></div>
-          <p className="hero-amount"><span>₩</span> —</p>
-          <div className="balance-row"><span>수입 − 지출</span><strong>— 원</strong></div>
+    <article className="ledger-page home-page">
+      <PageHeader eyebrow="MY LEDGER" title="홈" description="이번 달 가계부를 한눈에" />
+      <div className="home-workspace">
+        <section className="home-overview" aria-label="월별 요약, 데이터 미연결">
+          <PeriodNav month={month} onChange={onMonthChange} variant="ledger" />
+          <section className="home-hero" aria-labelledby="home-expense-heading">
+            <h2 id="home-expense-heading" className="home-small">이번 달 지출</h2>
+            <p className="home-amount" aria-label="이번 달 지출, 데이터 미연결">₩ —</p>
+            <div className="home-balance">
+              <span className="home-small">수입 − 지출</span>
+              <strong aria-label="수입에서 지출을 뺀 차액, 데이터 미연결">—원</strong>
+            </div>
+          </section>
+          <dl className="home-mini-stats">
+            <div>
+              <dt className="home-small">이번 달 수입</dt>
+              <dd aria-label="이번 달 수입, 데이터 미연결">—원</dd>
+            </div>
+            <div>
+              <dt className="home-small">거래 건수</dt>
+              <dd aria-label="거래 건수, 데이터 미연결">—건</dd>
+            </div>
+          </dl>
         </section>
-        <div className="mini-stats">
-          <section className="mini-stat"><div className="card-label"><h2>이번 달 수입</h2><Icon name="arrowDown" size={17} /></div><p>—<span>원</span></p></section>
-          <section className="mini-stat"><div className="card-label"><h2>거래 건수</h2><Icon name="receipt" size={17} /></div><p>—<span>건</span></p></section>
+
+        <div className="home-details">
+          <section aria-labelledby="home-category-heading">
+            <div className="home-section-heading">
+              <h2 id="home-category-heading">카테고리별 지출</h2>
+              <span className="home-connection-state">데이터 미연결</span>
+            </div>
+            {/* 원본도 지출 데이터가 없으면 막대 대신 빈 상태를 표시합니다. */}
+            <div className="ledger-empty">데이터 연결 후 지출 비율을 표시합니다.</div>
+          </section>
+          <section aria-labelledby="home-recent-heading">
+            <div className="home-section-heading">
+              <h2 id="home-recent-heading">최근 거래</h2>
+              <button type="button" className="home-history-link" aria-label="전체 내역 보기" onClick={onHistory}>
+                전체 보기 <span aria-hidden="true">›</span>
+              </button>
+            </div>
+            <div className="ledger-empty">데이터 연결 후 최근 거래를 표시합니다.</div>
+          </section>
         </div>
       </div>
-      <p className="data-note">아직 가계부를 연결하지 않았어요. 연결 후 나의 기록이 여기에 표시됩니다.</p>
-      <div className="content-grid home-sections">
-        <section className="content-section">
-          <div className="section-heading"><h2>카테고리별 지출</h2><span className="section-meta">이번 달</span></div>
-          <div className="empty-panel"><EmptyState icon="circle" title="아직 표시할 지출이 없어요" description="나의 소비가 어디로 향했는지 한눈에 살펴보세요." /></div>
-        </section>
-        <section className="content-section">
-          <div className="section-heading"><h2>최근 거래</h2><button type="button" className="text-button" onClick={onHistory}>전체 보기<Icon name="arrowRight" size={14} /></button></div>
-          <div className="empty-panel"><EmptyState title="기록을 기다리고 있어요" description="연결된 가계부의 최근 거래가 여기에 모입니다." /></div>
-        </section>
-      </div>
-      <div className="quiet-note"><Icon name="book" size={18} /><p>작은 기록부터, 나의 생활을 차곡차곡.</p></div>
-    </>
+    </article>
   )
 }

@@ -116,98 +116,6 @@ h1 {
   background: var(--surface);
 }
 
-.overview-grid {
-  display: grid;
-  gap: 12px;
-}
-
-.expense-card {
-  padding: 23px 23px 18px;
-  border-radius: 18px;
-  background: var(--surface);
-}
-
-.card-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--secondary);
-}
-
-.card-label h2 {
-  margin: 0;
-  color: inherit;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.card-symbol {
-  display: flex;
-}
-
-.hero-amount {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 15px 0 25px;
-  font-size: 44px;
-  font-weight: 650;
-  line-height: 1.2;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -1.6px;
-}
-
-.hero-amount > span {
-  color: var(--secondary);
-  font-size: 28px;
-  font-weight: 450;
-}
-
-.balance-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  padding-top: 17px;
-  border-top: 1px solid #dedede;
-  font-size: 12px;
-  color: var(--secondary);
-}
-
-.balance-row strong {
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.mini-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.mini-stat {
-  min-width: 0;
-  padding: 17px 16px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.mini-stat p {
-  margin: 15px 0 0;
-  font-size: 24px;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-}
-
-.mini-stat p > span {
-  margin-left: 6px;
-  font-size: 12px;
-  font-weight: 450;
-  color: var(--secondary);
-}
-
 .data-note {
   margin: 14px 0 0;
   color: var(--secondary);
@@ -219,10 +127,6 @@ h1 {
 .content-grid {
   display: grid;
   gap: 28px;
-}
-
-.home-sections {
-  margin-top: 30px;
 }
 
 .content-section {
@@ -293,20 +197,6 @@ h1 {
   font-size: 11px;
   line-height: 1.8;
   word-break: keep-all;
-}
-
-.quiet-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin-top: 34px;
-  color: var(--secondary);
-}
-
-.quiet-note p {
-  margin: 0;
-  font-size: 11px;
 }
 
 .summary-strip {
@@ -625,22 +515,6 @@ h1 {
     padding-inline: 36px;
   }
 
-  .overview-grid {
-    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-  }
-
-  .mini-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .mini-stat {
-    padding: 15px 18px;
-  }
-
-  .mini-stat p {
-    margin-top: 8px;
-  }
-
   .content-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 28px;
@@ -797,33 +671,6 @@ h1 {
 
   .page-description {
     font-size: 13px;
-  }
-
-  .overview-grid {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    gap: 16px;
-  }
-
-  .expense-card {
-    padding: 26px 28px 22px;
-  }
-
-  .hero-amount {
-    margin-top: 16px;
-    margin-bottom: 25px;
-    font-size: 48px;
-  }
-
-  .mini-stat {
-    padding: 17px 22px;
-  }
-
-  .mini-stat p {
-    margin-top: 10px;
-  }
-
-  .home-sections {
-    margin-top: 34px;
   }
 
   .empty-state {

@@ -1,104 +1,5 @@
 .history-layout {
-  height: 100dvh;
-  overflow: hidden;
-}
-
-.history-layout .main-shell {
-  display: flex;
-  flex-direction: column;
-  height: calc(100dvh - var(--bottom-nav-height));
-  min-height: 0;
-}
-
-.history-layout .main-content {
-  flex: 1;
-  width: 100%;
-  min-height: 0;
-  max-width: 580px;
-  margin-bottom: 74px; /* FAB 45px + 탭과의 간격 13px + 스크롤 간격 16px */
-  overflow-y: auto;
-  overscroll-behavior-y: contain;
-  scrollbar-width: none;
-  padding: calc(16px + env(safe-area-inset-top, 0px))
-    max(22px, env(safe-area-inset-right, 0px))
-    24px
-    max(22px, env(safe-area-inset-left, 0px));
-}
-
-.history-layout .main-content::-webkit-scrollbar {
-  display: none;
-}
-
-.history-layout .page-footer {
-  display: none;
-}
-
-.history-page {
-  color: #161616;
-  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-}
-
-.history-page .page-header {
-  margin-bottom: 24px;
-}
-
-.history-page .eyebrow {
-  margin: 0 0 8px;
-  color: #a3a3a3;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-}
-
-.history-page h1 {
-  font-size: 29px;
-  font-weight: 780;
-  line-height: normal;
-  letter-spacing: -1.2px;
-}
-
-.history-page .page-description {
-  margin: 7px 0 0;
-  color: #999;
-  font-size: 11px;
-  line-height: normal;
-}
-
-.period-toolbar.is-ledger {
-  margin: 0 0 18px;
-}
-
-.period-toolbar.is-ledger .period-nav {
-  width: 100%;
-  justify-content: space-between;
-  gap: 0;
-  margin: 0;
-}
-
-.period-toolbar.is-ledger .period-label {
-  color: #161616;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -.5px;
-}
-
-/* 원본의 31px 원형 버튼 모양을 유지하면서 터치 영역은 44px로 확보합니다. */
-.period-toolbar.is-ledger .icon-button {
-  margin: -6.5px;
-  background: transparent;
-}
-
-.ledger-chevron {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 31px;
-  height: 31px;
-  border-radius: 50%;
-  color: #555;
-  background: #f5f5f5;
-  font-size: 22px;
-  line-height: 1;
+  --ledger-scroll-clearance: 74px; /* FAB 45px + 탭 간격 13px + 스크롤 간격 16px */
 }
 
 .summary-strip.is-ledger {
@@ -221,17 +122,6 @@
   font-size: 11px;
 }
 
-.ledger-empty {
-  padding: 23px 11px;
-  border: 1px dashed #e5e5e5;
-  border-radius: 13px;
-  color: #999;
-  background: #fafafa;
-  text-align: center;
-  font-size: 12px;
-  line-height: 1.9;
-}
-
 /* 탭 높이에 Safe Area를 포함합니다. 스크롤 영역은 FAB 위에서 끝납니다. */
 .ledger-fab-position {
   position: fixed;
@@ -342,11 +232,6 @@
 }
 
 @media (min-width: 1024px) {
-  .history-layout .main-content {
-    max-width: 1000px;
-    padding: 32px 44px 24px;
-  }
-
   .history-workspace {
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
@@ -366,14 +251,6 @@
 }
 
 @media (max-width: 1023px) and (max-height: 650px) {
-  .history-layout .main-content {
-    padding-top: calc(12px + env(safe-area-inset-top, 0px));
-  }
-
-  .history-page .page-header {
-    margin-bottom: 13px;
-  }
-
   .summary-strip.is-ledger {
     margin-bottom: 13px;
   }

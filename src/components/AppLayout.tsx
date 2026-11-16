@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { navigation, type PageId } from '../app/navigation'
 import { Icon } from './Icon'
+import './ledger.css'
 
 export function AppLayout({ page, onNavigate, children }: {
   page: PageId
@@ -8,7 +9,7 @@ export function AppLayout({ page, onNavigate, children }: {
   children: ReactNode
 }) {
   return (
-    <div className={`app-layout ${page === 'history' ? 'history-layout' : ''}`}>
+    <div className={`app-layout ${page === 'home' || page === 'history' ? `ledger-layout ${page}-layout` : ''}`}>
       <a className="skip-link" href="#main-content">본문으로 건너뛰기</a>
       <aside className="sidebar">
         <a
