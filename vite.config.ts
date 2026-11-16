@@ -3,6 +3,17 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://budget-api.ecoma.kro.kr',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
+  // preview는 정적 배포 점검용이며 개발 프록시를 상속하지 않습니다.
+  preview: { proxy: {} },
   plugins: [
     react(),
     VitePWA({
