@@ -1,9 +1,16 @@
 import { useLayoutEffect, useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
 import { CategoriesPage } from './CategoriesPage'
+import type { LedgerData } from '../domain/types'
+import { ledgerCategories } from '../app/ledgerViews'
 import './SettingsPage.css'
 
-export function SettingsPage() {
+export function SettingsPage({ data, refreshing, refreshError, onReload }: {
+  data: LedgerData
+  refreshing: boolean
+  refreshError: string | null
+  onReload: () => Promise<boolean>
+}) {
   const [view, setView] = useState<'settings' | 'categories'>('settings')
 
   useLayoutEffect(() => {
@@ -12,7 +19,7 @@ export function SettingsPage() {
     main?.focus({ preventScroll: true })
   }, [view])
 
-  if (view === 'categories') return <CategoriesPage onBack={() => setView('settings')} />
+  if (view === 'categories') return <CategoriesPage categories={ledgerCategories(data)} onBack={() => setView('settings')} />
 
   return (
     <article className="ledger-page settings-page">
@@ -37,10 +44,10 @@ export function SettingsPage() {
           <section aria-labelledby="settings-data-heading">
             <h2 id="settings-data-heading" className="settings-label">데이터</h2>
             <dl className="settings-values">
-              <div className="settings-row"><dt>저장 방식</dt><dd>서버 저장 · 미연결</dd></div>
+              <div className="settings-row"><dt>저장 방식</dt><dd>서버 데이터 · 읽기 전용</dd></div>
             </dl>
-            <button type="button" className="settings-row" disabled aria-describedby="settings-connection-note">
-              <span>서버 데이터 새로고침</span><span className="settings-value">연결 준비 중</span>
+            <button type="button" className="settings-row" disabled={refreshing} onClick={() => void onReload()} aria-describedby="settings-connection-note">
+              <span>서버 데이터 새로고침</span><span className="settings-value">{refreshing ? '조회 중…' : refreshError ? '다시 시도' : '조회 완료'}</span>
             </button>
           </section>
           <section aria-labelledby="settings-info-heading">
@@ -49,7 +56,7 @@ export function SettingsPage() {
               <div className="settings-row"><dt>앱 버전</dt><dd>0.0.0 · 웹 미리보기</dd></div>
             </dl>
             <p id="settings-connection-note" className="settings-note">
-              서버 API 연결 전입니다. 현재 저장·새로고침 기능은 사용할 수 없습니다.
+              서버에서 불러온 데이터를 표시합니다. 새로고침은 조회만 수행하며 거래·카테고리 저장·삭제는 지원하지 않습니다.
             </p>
           </section>
         </div>

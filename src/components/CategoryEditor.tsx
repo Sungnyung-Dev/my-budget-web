@@ -58,11 +58,11 @@ export function CategoryEditor({ target, categories, onClose }: {
       />
       <p id="category-name-error" className="sheet-error" role="alert">{touched ? error : ''}</p>
       <p id="category-editor-connection" className="sheet-notice">
-        {preview ? '수정·삭제 UI 미리보기입니다. 선택된 서버 카테고리는 없습니다.' : '서버 API 연결 전입니다. 입력한 내용은 저장되지 않습니다.'}
+        {preview ? '수정·삭제 UI 미리보기입니다. 선택된 서버 카테고리는 없습니다.' : '현재는 읽기 전용입니다. 입력한 내용은 저장되지 않습니다.'}
       </p>
-      <button type="submit" className="sheet-primary" disabled title="서버 연결 후 저장할 수 있습니다.">{editing ? '이름 변경 저장' : '카테고리 추가'}</button>
+      <button type="submit" className="sheet-primary" disabled title="현재는 읽기 전용입니다.">{editing ? '이름 변경 저장' : '카테고리 추가'}</button>
       {editing && !confirm && (
-        <button ref={deleteButton} type="button" className="sheet-secondary" disabled={uses !== undefined && uses > 0} onClick={() => setConfirm(true)}>
+        <button ref={deleteButton} type="button" className="sheet-secondary" disabled onClick={() => setConfirm(true)}>
           {preview ? '삭제 확인 UI 보기' : '카테고리 삭제'}
         </button>
       )}
@@ -70,7 +70,7 @@ export function CategoryEditor({ target, categories, onClose }: {
       {confirm && (
         <section className="sheet-delete-confirm" aria-labelledby="category-delete-heading">
           <h3 id="category-delete-heading">이 카테고리를 삭제할까요?</h3>
-          <p>서버 미연결 상태이므로 삭제할 수 없습니다.</p>
+          <p>현재는 읽기 전용이므로 삭제할 수 없습니다.</p>
           <button type="button" className="sheet-primary" disabled>삭제 확인</button>
           <button ref={confirmCancel} type="button" className="sheet-secondary" onClick={() => { setConfirm(false); requestAnimationFrame(() => deleteButton.current?.focus()) }}>삭제 취소</button>
         </section>

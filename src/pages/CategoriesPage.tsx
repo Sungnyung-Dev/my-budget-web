@@ -36,7 +36,7 @@ export function CategoriesPage({ onBack, categories }: {
                 </ul>
               ) : (
                 <div className="ledger-empty categories-empty">
-                  {categories ? '카테고리를 추가해 주세요.' : '카테고리 데이터가 연결되지 않았습니다.'}
+                  {categories ? '서버에 등록된 카테고리가 없습니다.' : '카테고리 데이터가 연결되지 않았습니다.'}
                   {!categories && <>
                     <br />서버 연결 후 목록을 표시합니다.
                     <button type="button" className="categories-preview" aria-label={`${label} 카테고리 수정·삭제 UI 미리보기`} onClick={() => setEditor({ mode: 'edit', type })}>수정·삭제 UI 미리보기 ›</button>
@@ -47,7 +47,7 @@ export function CategoriesPage({ onBack, categories }: {
           )
         })}
       </div>
-      <p className="settings-note">사용 중인 카테고리는 삭제할 수 없습니다. 이름 변경은 기존 거래와 통계에도 반영됩니다. 현재는 입력 UI만 확인할 수 있으며 저장·삭제되지 않습니다.</p>
+      <p className="settings-note">사용 건수는 전체 서버 거래를 기준으로 합니다. 현재는 읽기 전용이며 입력 시트의 내용은 저장·삭제되지 않습니다.</p>
       {editor && <CategoryEditor target={editor} categories={categories} onClose={() => setEditor(null)} />}
     </article>
   )

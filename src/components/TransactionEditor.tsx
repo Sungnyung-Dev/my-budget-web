@@ -95,7 +95,7 @@ export function TransactionEditor({ date, transaction, categories, onClose }: {
             ))}
           </div>
         ) : (
-          <p className="transaction-categories-empty">사용할 카테고리가 없습니다.<br />서버 연결 후 선택할 수 있습니다.</p>
+          <p className="transaction-categories-empty">이 유형으로 서버에 등록된 카테고리가 없습니다.</p>
         )}
         {options.length > 0 && !categoryValid && <p className="sheet-error" role="alert">거래 유형에 맞는 카테고리를 선택해 주세요.</p>}
       </fieldset>
@@ -114,13 +114,13 @@ export function TransactionEditor({ date, transaction, categories, onClose }: {
         onChange={(event) => setMemo(event.target.value)}
       />
       <p id="transaction-error" className="sheet-error" role="alert">{amountTouched ? amountError : ''}{memo.length > 100 ? ' 메모는 100자까지 입력할 수 있습니다.' : ''}</p>
-      <p id="transaction-connection" className="sheet-notice">서버 API 연결 전입니다. 입력한 내용은 저장·수정·삭제되지 않습니다.</p>
-      <button type="submit" className="sheet-primary" disabled title="서버 연결 후 저장할 수 있습니다.">{transaction ? '변경사항 저장' : '거래 저장'}</button>
-      {transaction && !confirmDelete && <button ref={deleteButton} type="button" className="sheet-secondary" onClick={() => setConfirmDelete(true)}>거래 삭제</button>}
+      <p id="transaction-connection" className="sheet-notice">현재는 읽기 전용입니다. 입력한 내용은 저장·수정·삭제되지 않습니다.</p>
+      <button type="submit" className="sheet-primary" disabled title="현재는 읽기 전용입니다.">{transaction ? '변경사항 저장' : '거래 저장'}</button>
+      {transaction && !confirmDelete && <button ref={deleteButton} type="button" className="sheet-secondary" disabled onClick={() => setConfirmDelete(true)}>거래 삭제</button>}
       {confirmDelete && (
         <section className="sheet-delete-confirm" aria-labelledby="transaction-delete-heading">
           <h3 id="transaction-delete-heading">이 거래를 삭제할까요?</h3>
-          <p>서버 미연결 상태이므로 삭제할 수 없습니다.</p>
+          <p>현재는 읽기 전용이므로 삭제할 수 없습니다.</p>
           <div className="transaction-confirm-buttons">
             <button ref={deleteCancel} type="button" className="sheet-secondary" onClick={() => { setConfirmDelete(false); requestAnimationFrame(() => deleteButton.current?.focus()) }}>삭제 취소</button>
             <button type="button" className="sheet-primary" disabled>삭제 확인</button>

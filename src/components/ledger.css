@@ -143,6 +143,9 @@
 
 .category-bar-text strong {
   flex-shrink: 0;
+  max-width: 75%;
+  overflow-wrap: anywhere;
+  text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
@@ -188,7 +191,86 @@
   font-weight: 750;
   font-variant-numeric: tabular-nums;
   letter-spacing: -.55px;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+}
+
+.ledger-status {
+  color: #555;
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.ledger-status.is-initial {
+  padding: 32px 20px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 15px;
+  background: #fafafa;
+  text-align: center;
+}
+
+.ledger-status.is-notice {
+  margin-bottom: 20px;
+  padding: 12px 15px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 10px;
+}
+
+.ledger-status p { margin: 0; }
+.ledger-status button { margin-top: 10px; }
+
+.ledger-transactions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ledger-transaction {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--ledger-line);
+}
+
+.ledger-transaction-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  color: #606060;
+  background: var(--ledger-card);
+}
+
+.ledger-transaction-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ledger-transaction-text strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ledger-transaction-text > span {
+  display: block;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+  color: #999;
+  font-size: 10px;
+}
+
+.ledger-transaction-amount {
+  max-width: 48%;
+  overflow-wrap: anywhere;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (min-width: 1024px) {

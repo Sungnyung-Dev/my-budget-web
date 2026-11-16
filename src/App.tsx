@@ -7,9 +7,12 @@ import { HistoryPage } from './pages/HistoryPage'
 import { StatsPage } from './pages/StatsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { startOfMonth } from './lib/dates'
+import { useLedger } from './state/useLedger'
+import { LedgerStatus } from './components/LedgerStatus'
 import './App.css'
 
 function App() {
+  const { state, reload } = useLedger()
   const [page, setPage] = useState<PageId>('home')
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDate())
@@ -32,19 +35,21 @@ function App() {
 
   return (
     <AppLayout page={page} onNavigate={navigate}>
-      {page === 'home' && (
-        <HomePage month={month} onMonthChange={changeMonth} onHistory={() => navigate('history')} />
+      <LedgerStatus state={state} onReload={reload} />
+      {state.data && page === 'home' && (
+        <HomePage data={state.data} month={month} onMonthChange={changeMonth} onHistory={() => navigate('history')} />
       )}
-      {page === 'history' && (
+      {state.data && page === 'history' && (
         <HistoryPage
+          data={state.data}
           month={month}
           onMonthChange={changeMonth}
           selectedDay={selectedDay}
           onSelectDay={setSelectedDay}
         />
       )}
-      {page === 'stats' && <StatsPage month={month} onMonthChange={changeMonth} />}
-      {page === 'settings' && <SettingsPage />}
+      {state.data && page === 'stats' && <StatsPage data={state.data} month={month} onMonthChange={changeMonth} />}
+      {state.data && page === 'settings' && <SettingsPage data={state.data} refreshing={state.status === 'refreshing'} refreshError={state.error} onReload={reload} />}
       <PwaUpdateNotice />
     </AppLayout>
   )
