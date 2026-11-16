@@ -1,6 +1,6 @@
 # 나의 가계부 · Web
 
-기존 React Native iOS 가계부를 웹으로 옮기기 위한 React + TypeScript + Vite 기반입니다. 반응형 PWA 기반과 원본 시안에 맞춘 홈·내역·통계·설정·카테고리 관리 화면을 구현했습니다. 실제 데이터 연동은 아직 없습니다.
+기존 React Native iOS 가계부를 웹으로 옮기기 위한 React + TypeScript + Vite 기반입니다. 반응형 PWA, 원본 시안의 화면·입력 시트와 iOS 도메인 로직을 구현했습니다. 실제 데이터 연동은 아직 없습니다.
 
 ## 실행과 검사
 
@@ -15,11 +15,14 @@ npm run dev
 
 ```bash
 npm run typecheck
+npm test
 npm run build
 npm run preview
 ```
 
 `build`는 TypeScript 검사 후 `dist/`에 정적 앱, `manifest.webmanifest`, `sw.js`, Workbox 파일을 생성합니다. `preview`의 기본 주소는 `http://localhost:4173`입니다.
+
+`test`는 추가 라이브러리 없이 Node의 TypeScript 지원과 기본 테스트 러너를 사용합니다. 도메인 타입·날짜·집계·검증 함수와 104개 단위 테스트는 [도메인 문서](src/domain/README.md)에 정리했습니다. `typecheck`에는 테스트 코드 검사도 포함됩니다. 도메인 함수는 아직 화면에 연결하지 않았으며 기존 표시·PWA 동작을 유지합니다.
 
 초기 검증에서 개발 서버 HTTP 응답, TypeScript 검사, 프로덕션 빌드, PC·320/390/430px 화면, 탭·기간·날짜 선택을 확인했습니다. Chrome에서 Worker 활성화, 정적 리소스 10개 저장, 오프라인 새로고침도 확인했습니다. 실제 iPhone Safari 설치는 아직 검증하지 않았습니다.
 
@@ -139,20 +142,22 @@ src/
   app/navigation.ts    # 메뉴와 페이지 타입
   components/          # 공통 UI·PWA 알림·차트·BottomSheet·입력 시트
   pages/               # 홈·내역·통계·설정·카테고리 관리, 화면별 CSS
-  domain/              # 향후 거래·카테고리 타입과 순수 통계 로직
+  domain/              # iOS 타입·날짜·순수 집계·입력/응답 검증·표시 포맷
   lib/                 # 날짜 유틸리티, 향후 api/ 클라이언트
   App.tsx              # 페이지·선택 월 상태
   App.css              # 화면과 반응형 레이아웃
   index.css            # 공통 스타일·디자인 토큰
 vite.config.ts         # Vite / Manifest / Service Worker 설정
+tests/                 # 도메인 단위 테스트와 테스트 전용 거래·카테고리
+tsconfig.test.json     # 테스트와 도메인의 엄격한 TypeScript 검사
 ```
 
 라우터, UI 라이브러리, 별도 상태 관리 도구는 추가하지 않았습니다. 원본 HTML과 `my-budget-ios`는 읽기 전용으로 참고했습니다. 거래 입력 시트 구현에서는 기존 화면의 레이아웃·월·날짜 선택과 PWA 설정·업데이트 로직을 유지했습니다.
 
 ## 다음 구현 순서
 
-1. iOS의 도메인 타입·날짜·통계 함수 검토 및 웹용 순수 로직 이식.
-2. 기존 `https://budget-api.ecoma.kro.kr`의 계약 확인 후 조회·오류 처리와 거래·카테고리 CRUD 연동.
+1. iOS API 클라이언트를 참고해 기존 `https://budget-api.ecoma.kro.kr`의 응답·오류 계약과 인증·CORS 조건을 확인하고 조회 계층 추가.
+2. 응답을 도메인 검증기로 검사한 뒤 화면에 연결하고, 입력 검증과 거래·카테고리 CRUD를 순차 연동.
 3. HTTPS 배포 후 실제 iPhone 설치·화면 키보드·Safe Area·PWA 업데이트 검증.
 
 이번 작업에서는 기존 iOS 코드, 운영 API, 서버·DB·Nginx 설정을 변경하지 않습니다.
