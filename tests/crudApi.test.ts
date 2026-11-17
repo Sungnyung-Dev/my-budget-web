@@ -44,7 +44,7 @@ function errorIs(code: string, status?: number) {
 }
 
 for (const operation of operations) {
-  test(`${operation.label}: 계약의 메서드·JSON·상태와 서버 최종 응답을 사용한다`, async (t) => {
+  test(`${operation.label}: 동일 출처 인증과 계약의 메서드·JSON·상태·서버 최종 응답을 사용한다`, async (t) => {
     const response = new Response(operation.payload ? JSON.stringify(operation.payload) : null, { status: operation.status })
     const read = t.mock.method(response, 'text')
     let calls = 0
@@ -52,7 +52,7 @@ for (const operation of operations) {
       calls += 1
       assert.equal(path, operation.path)
       assert.equal(options?.method, operation.method)
-      assert.equal(options?.credentials, 'omit')
+      assert.equal(options?.credentials, 'same-origin')
       assert.equal(options?.cache, 'no-store')
       assert.ok(options?.signal instanceof AbortSignal)
       assert.deepEqual(options?.headers, operation.body

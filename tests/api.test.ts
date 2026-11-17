@@ -22,7 +22,7 @@ function assertApiError(code: ApiErrorCode, status?: number) {
   }
 }
 
-test('기본 클라이언트는 상대 경로 GET으로 전체 Ledger를 검증하며 인증·본문·캐시를 사용하지 않는다', async (t) => {
+test('기본 클라이언트는 동일 출처 인증을 허용한 상대 경로 GET으로 Ledger를 검증하며 본문·캐시를 사용하지 않는다', async (t) => {
   const ledger = createLedger()
   const fetchMock = t.mock.method(globalThis, 'fetch', async () => jsonResponse(ledger))
   assert.equal(fetchMock.mock.callCount(), 0)
@@ -35,7 +35,7 @@ test('기본 클라이언트는 상대 경로 GET으로 전체 Ledger를 검증�
   assert.equal(options?.method, 'GET')
   assert.deepEqual(options?.headers, { Accept: 'application/json' })
   assert.equal(options?.body, undefined)
-  assert.equal(options?.credentials, 'omit')
+  assert.equal(options?.credentials, 'same-origin')
   assert.equal(options?.cache, 'no-store')
   assert.ok(options?.signal instanceof AbortSignal)
   assert.equal(options.signal.aborted, false)

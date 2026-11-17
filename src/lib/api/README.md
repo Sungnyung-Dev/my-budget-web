@@ -42,7 +42,7 @@ try {
 | `INVALID_REQUEST` | 입력 필드·값·ID 또는 JSON 직렬화 실패, 전송 전 거부 | 없음 |
 | `ABORTED` | 호출자가 취소한 요청 | 없음 |
 
-`credentials: 'omit'`으로 쿠키를 전송하지 않고 `cache: 'no-store'`로 브라우저 HTTP 캐시를 사용하지 않습니다. 인증 헤더·API 키·비밀번호·브라우저 환경변수는 추가하지 않았습니다. 기존 Service Worker 설정은 변경하지 않았으며 API 응답 캐시·오프라인 저장은 없습니다.
+GET과 거래·카테고리 CRUD 모두 `credentials: 'same-origin'`을 사용하여 동일 출처 요청에 브라우저가 관리하는 HTTP Basic 인증 정보와 쿠키를 사용할 수 있도록 합니다. 사용자명·비밀번호·인증 헤더는 앱 코드나 환경변수에 저장하거나 직접 구성하지 않습니다. `cache: 'no-store'`로 브라우저 HTTP 캐시를 사용하지 않습니다. 기존 Service Worker 설정은 변경하지 않았으며 API 응답 캐시·오프라인 저장은 없습니다.
 
 ## 쓰기 함수와 계약
 
@@ -69,7 +69,7 @@ try {
 
 Vite preview는 기본적으로 `server.proxy`를 상속하므로, 혼동을 막기 위해 `preview.proxy: {}`를 명시했습니다. `npm run preview`는 정적 앱/PWA 확인용이고 API 프록시는 제공하지 않습니다. 개발/preview 서버는 실제 배포 서버가 아닙니다. 참고: [Vite server.proxy](https://vite.dev/config/server-options#server-proxy), [preview.proxy](https://vite.dev/config/preview-options#preview-proxy).
 
-현재 백엔드에는 **인증·사용자별 접근 제어가 없습니다.** 주소에 접근할 수 있는 요청자를 구분하지 못하는 제한이 있으며, 프록시나 프론트엔드 코드만으로 인증이 생기지는 않습니다. 인증 설계·서버 변경은 후속 범위입니다.
+배포 시 Nginx HTTP Basic Authentication으로 웹앱과 동일 출처 `/api/`를 보호하는 구성을 전제로 합니다. 인증 입력과 인증 정보 관리는 브라우저에 맡기며 앱 자체 로그인 화면·인증 상태 관리는 추가하지 않습니다. `same-origin` 설정만으로 서버 인증이나 사용자별 데이터 분리가 구현되지는 않습니다. 실제 Nginx 적용과 HTTPS 배포 후 브라우저 인증·API 접근 확인은 서버 배포 단계에서 별도로 진행해야 합니다. 이번 변경에서는 서버·Nginx·DB를 수정하지 않았습니다.
 
 ## 검증과 다음 단계
 

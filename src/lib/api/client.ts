@@ -92,7 +92,7 @@ export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl }: A
         method,
         headers: { Accept: 'application/json', ...(json !== undefined ? { 'Content-Type': 'application/json' } : {}) },
         ...(json !== undefined ? { body: json } : {}),
-        credentials: 'omit',
+        credentials: 'same-origin',
         cache: 'no-store',
         signal: controller.signal,
       })
