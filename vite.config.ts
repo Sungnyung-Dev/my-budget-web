@@ -18,6 +18,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // Basic 인증으로 보호된 Manifest 요청에도 브라우저 인증 정보를 전달합니다.
+      useCredentials: true,
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {

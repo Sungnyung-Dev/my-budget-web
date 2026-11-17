@@ -1,0 +1,60 @@
+server {
+    listen 80;
+    server_name budget.ecoma.kro.kr;
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+        default_type text/plain;
+        try_files $uri =404;
+    }
+    location / {
+        return 301 https://budget.ecoma.kro.kr$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name budget.ecoma.kro.kr;
+    ssl_certificate /etc/letsencrypt/live/budget.ecoma.kro.kr/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/budget.ecoma.kro.kr/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    if ($host != budget.ecoma.kro.kr) { return 444; }
+    root /var/www/my-budget-web/current;
+    index index.html;
+    include /etc/nginx/snippets/my-budget-auth.conf;
+    add_header Cache-Control "no-cache, max-age=0, must-revalidate" always;
+
+    location = /api {
+        include /etc/nginx/snippets/my-budget-proxy.conf;
+    }
+    location ^~ /api/ {
+        include /etc/nginx/snippets/my-budget-proxy.conf;
+    }
+    location = /index.html {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache, max-age=0, must-revalidate" always;
+    }
+    location = /sw.js {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache, max-age=0, must-revalidate" always;
+    }
+    location = /manifest.webmanifest {
+        types { application/manifest+json webmanifest; }
+        try_files $uri =404;
+        add_header Cache-Control "no-cache, max-age=0, must-revalidate" always;
+    }
+    location ~ /\. { return 404; }
+    location ~* "^/(assets/.+-[A-Za-z0-9_-]{8,}\.(js|css|woff2?)|workbox-[a-f0-9]+\.js)$" {
+        try_files $uri =404;
+        add_header Cache-Control "private, max-age=31536000, immutable";
+    }
+    location /assets/ { try_files $uri =404; }
+    location ^~ /icons/ { try_files $uri =404; }
+    location ~* \.(html|js|mjs|css|map|json|webmanifest|png|jpe?g|gif|svg|ico|webp|avif|woff2?|ttf|eot|txt|xml)$ {
+        try_files $uri =404;
+    }
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
