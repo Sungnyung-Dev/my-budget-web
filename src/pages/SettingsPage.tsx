@@ -2,16 +2,16 @@ import { useLayoutEffect, useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
 import { CategoriesPage } from './CategoriesPage'
 import type { LedgerData } from '../domain/types'
-import { ledgerCategories } from '../app/ledgerViews'
+import type { LedgerController } from '../state/useLedger'
 import './SettingsPage.css'
 
-export function SettingsPage({ data, refreshing, refreshError, onReload }: {
+export function SettingsPage({ data, ledger }: {
   data: LedgerData
-  refreshing: boolean
-  refreshError: string | null
-  onReload: () => Promise<boolean>
+  ledger: LedgerController
 }) {
   const [view, setView] = useState<'settings' | 'categories'>('settings')
+  const { state, reload } = ledger
+  const refreshing = state.status === 'refreshing'
 
   useLayoutEffect(() => {
     const main = document.getElementById('main-content')
@@ -19,7 +19,7 @@ export function SettingsPage({ data, refreshing, refreshError, onReload }: {
     main?.focus({ preventScroll: true })
   }, [view])
 
-  if (view === 'categories') return <CategoriesPage categories={ledgerCategories(data)} onBack={() => setView('settings')} />
+  if (view === 'categories') return <CategoriesPage ledger={ledger} onBack={() => setView('settings')} />
 
   return (
     <article className="ledger-page settings-page">
@@ -44,19 +44,19 @@ export function SettingsPage({ data, refreshing, refreshError, onReload }: {
           <section aria-labelledby="settings-data-heading">
             <h2 id="settings-data-heading" className="settings-label">데이터</h2>
             <dl className="settings-values">
-              <div className="settings-row"><dt>저장 방식</dt><dd>서버 데이터 · 읽기 전용</dd></div>
+              <div className="settings-row"><dt>저장 방식</dt><dd>서버 저장</dd></div>
             </dl>
-            <button type="button" className="settings-row" disabled={refreshing} onClick={() => void onReload()} aria-describedby="settings-connection-note">
-              <span>서버 데이터 새로고침</span><span className="settings-value">{refreshing ? '조회 중…' : refreshError ? '다시 시도' : '조회 완료'}</span>
+            <button type="button" className="settings-row" disabled={refreshing || state.saving} onClick={() => void reload()} aria-describedby="settings-connection-note">
+              <span>서버 데이터 새로고침</span><span className="settings-value">{refreshing ? '조회 중…' : state.error || state.needsRefresh ? '다시 확인' : '조회 완료'}</span>
             </button>
           </section>
           <section aria-labelledby="settings-info-heading">
             <h2 id="settings-info-heading" className="settings-label">정보</h2>
             <dl className="settings-values">
-              <div className="settings-row"><dt>앱 버전</dt><dd>0.0.0 · 웹 미리보기</dd></div>
+              <div className="settings-row"><dt>앱 버전</dt><dd>0.0.0</dd></div>
             </dl>
             <p id="settings-connection-note" className="settings-note">
-              서버에서 불러온 데이터를 표시합니다. 새로고침은 조회만 수행하며 거래·카테고리 저장·삭제는 지원하지 않습니다.
+              거래 {data.transactions.length}건 · 카테고리 {data.categories.length}개를 서버에서 불러왔습니다. 새로고침은 조회만 수행하며, 저장·삭제는 서버 확인 후 화면에 반영합니다.
             </p>
           </section>
         </div>

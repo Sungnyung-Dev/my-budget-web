@@ -11,3 +11,5 @@ export function useLedger() {
     createCategory: store.createCategory, updateCategory: store.updateCategory, deleteCategory: store.deleteCategory,
   }
 }
+
+export type LedgerController = ReturnType<typeof useLedger>

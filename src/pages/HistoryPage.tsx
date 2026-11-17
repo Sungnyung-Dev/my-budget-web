@@ -1,27 +1,26 @@
-import { useState } from 'react'
 import { PageHeader } from '../components/PageHeader'
 import { PeriodNav } from '../components/PeriodNav'
 import { Summary } from '../components/Summary'
-import { TransactionEditor } from '../components/TransactionEditor'
 import { getCalendarDays } from '../lib/dates'
 import { ledgerPeriod } from '../app/ledgerViews'
 import { dateKey } from '../domain/dates'
 import { forDay, getTotals } from '../domain/selectors'
 import { formatMoney } from '../domain/formatters'
-import type { LedgerData } from '../domain/types'
+import type { LedgerData, Transaction } from '../domain/types'
 import { TransactionList } from '../components/TransactionList'
 import './HistoryPage.css'
 
 const weekdays = ['일', '월', '화', '수', '목', '금', '토']
 
-export function HistoryPage({ data, month, onMonthChange, selectedDay, onSelectDay }: {
+export function HistoryPage({ data, month, onMonthChange, selectedDay, onSelectDay, onAdd, onEdit }: {
   data: LedgerData
   month: Date
   onMonthChange: (month: Date) => void
   selectedDay: number
   onSelectDay: (day: number) => void
+  onAdd: (date: string) => void
+  onEdit: (row: Transaction) => void
 }) {
-  const [adding, setAdding] = useState(false)
   const today = new Date()
   const year = month.getFullYear()
   const monthNumber = month.getMonth() + 1
@@ -93,7 +92,7 @@ export function HistoryPage({ data, month, onMonthChange, selectedDay, onSelectD
             </div>
             <span className="ledger-count">{selectedRows.length}건</span>
           </div>
-          {selectedRows.length ? <TransactionList rows={selectedRows} categories={data.categories} /> : (
+          {selectedRows.length ? <TransactionList rows={selectedRows} categories={data.categories} onEdit={onEdit} /> : (
             <div className="ledger-empty">선택한 날짜에 거래가 없습니다.<br />+ 버튼으로 거래 입력 화면을 열 수 있습니다.</div>
           )}
         </section>
@@ -105,12 +104,10 @@ export function HistoryPage({ data, month, onMonthChange, selectedDay, onSelectD
           className="ledger-fab"
           aria-label="선택한 날짜에 거래 추가"
           aria-haspopup="dialog"
-          aria-controls={adding ? 'transaction-editor' : undefined}
-          onClick={() => setAdding(true)}
+          onClick={() => onAdd(selectedKey)}
         ><span aria-hidden="true">+</span></button>
       </div>
 
-      {adding && <TransactionEditor date={selectedKey} categories={data.categories} onClose={() => setAdding(false)} />}
     </article>
   )
 }

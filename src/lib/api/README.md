@@ -1,6 +1,6 @@
 # Ledger HTTP API
 
-`client.ts`는 공통 HTTP 클라이언트, `ledgerApi.ts`는 전체 Ledger 조회, `transactionApi.ts`·`categoryApi.ts`는 쓰기 함수입니다. 인접한 iOS의 API·Provider와 백엔드의 라우트·검증·서비스 계약을 읽기 전용으로 확인했습니다. React나 저장소에 의존하지 않으며 모듈을 import하는 것만으로 요청하지 않습니다. 현재 화면은 조회만 연결되어 있습니다.
+`client.ts`는 공통 HTTP 클라이언트, `ledgerApi.ts`는 전체 Ledger 조회, `transactionApi.ts`·`categoryApi.ts`는 쓰기 함수입니다. 인접한 iOS의 API·Provider와 백엔드의 라우트·검증·서비스 계약을 읽기 전용으로 확인했습니다. React나 저장소에 의존하지 않으며 모듈을 import하는 것만으로 요청하지 않습니다. 화면의 조회·CRUD 버튼은 [공통 상태 계층](../../state/README.md)을 통해 연결됩니다.
 
 ## 계약
 
@@ -77,4 +77,4 @@ Vite preview는 기본적으로 `server.proxy`를 상속하므로, 혼동을 막
 
 2026-11-16 개발 서버의 앱 HTTP 200과 Vite 프록시를 통한 읽기 전용 `GET /api/v1/ledger` HTTP 200 및 웹 도메인 검증 통과를 확인했습니다. 실제 응답은 메모리에서만 검증했으며 거래 내용은 로그·파일·문서에 기록하지 않았습니다. 브라우저 화면 연결·실제 배포 출처의 라우팅·실제 iPhone 네트워크 동작은 이번 검증에 포함하지 않습니다.
 
-현재 조회 상태(`loading`·`ready`·`error`·`refreshing`)와 쓰기 상태(`saving`·`needsRefresh`)는 [React 상태 계층](../../state/README.md)에 구현했습니다. 기존 조회·도메인·화면 테스트 185개에 쓰기 API·상태 테스트 214개를 더해 총 399개가 통과했습니다. 모든 HTTP 테스트는 주입된 모의 fetch·Response·가상 타이머를 사용하며 운영 서버에 POST·PATCH·DELETE를 보내지 않습니다. 화면·버튼·CSS는 이번 작업에서 변경하지 않았고 PWA 설정과 기존 조회 계약도 유지합니다. 다음 단계는 UI 버튼 연결이며 로컬 저장은 구현하지 않습니다.
+현재 조회 상태(`loading`·`ready`·`error`·`refreshing`)와 쓰기 상태(`saving`·`needsRefresh`)는 [React 상태 계층](../../state/README.md)에 구현했습니다. 기존 조회·도메인·화면 테스트 185개에 쓰기 API·상태 테스트 214개를 더해 총 399개가 통과했습니다. 모든 HTTP 테스트는 주입된 모의 fetch·Response·가상 타이머를 사용하며 운영 서버에 POST·PATCH·DELETE를 보내지 않습니다. 이 수치는 API·상태 계층의 Node 테스트이며, 이후 연결한 UI의 브라우저 검증은 [별도 절차](../../../tests/browser/README.md)로 실행합니다. PWA 설정과 기존 API·조회 계약을 유지하며 로컬 저장은 구현하지 않습니다.

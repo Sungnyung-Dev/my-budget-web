@@ -1,11 +1,12 @@
 import { useEffect, useId, useRef, type FormEventHandler, type ReactNode } from 'react'
 import './BottomSheet.css'
 
-export function BottomSheet({ id, title, closeLabel, descriptionId, onClose, onSubmit, children }: {
+export function BottomSheet({ id, title, closeLabel, descriptionId, busy = false, onClose, onSubmit, children }: {
   id?: string
   title: string
   closeLabel: string
   descriptionId: string
+  busy?: boolean
   onClose: () => void
   onSubmit: FormEventHandler<HTMLFormElement>
   children: ReactNode
@@ -48,23 +49,27 @@ export function BottomSheet({ id, title, closeLabel, descriptionId, onClose, onS
       className="bottom-sheet"
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
-      onClose={onClose}
+      onClose={() => { if (!busy) onClose() }}
+      onCancel={(event) => { if (busy) event.preventDefault() }}
       onClick={(event) => {
         if (event.target !== event.currentTarget) return
         const rect = event.currentTarget.getBoundingClientRect()
         const outside = event.clientX < rect.left || event.clientX > rect.right
           || event.clientY < rect.top || event.clientY > rect.bottom
-        if (outside) event.currentTarget.close()
+        if (outside && !busy) event.currentTarget.close()
       }}
     >
       <div className="bottom-sheet-header">
         <div className="bottom-sheet-grab" />
         <div className="bottom-sheet-heading">
           <h2 id={titleId}>{title}</h2>
-          <button type="button" className="bottom-sheet-close" aria-label={closeLabel} onClick={() => dialog.current?.close()}>×</button>
+          <button type="button" className="bottom-sheet-close" aria-label={closeLabel} disabled={busy} onClick={() => dialog.current?.close()}>×</button>
         </div>
       </div>
-      <form className="bottom-sheet-body" noValidate onSubmit={onSubmit}>{children}</form>
+      <form className="bottom-sheet-body" noValidate aria-busy={busy} onSubmit={(event) => {
+        if (busy) event.preventDefault()
+        else onSubmit(event)
+      }}><fieldset className="sheet-fields" disabled={busy}>{children}</fieldset></form>
     </dialog>
   )
 }

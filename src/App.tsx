@@ -9,13 +9,21 @@ import { SettingsPage } from './pages/SettingsPage'
 import { startOfMonth } from './lib/dates'
 import { useLedger } from './state/useLedger'
 import { LedgerStatus } from './components/LedgerStatus'
+import { TransactionEditor } from './components/TransactionEditor'
+import type { Transaction } from './domain/types'
 import './App.css'
 
 function App() {
-  const { state, reload } = useLedger()
+  const ledger = useLedger()
+  const { state, reload } = ledger
   const [page, setPage] = useState<PageId>('home')
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDate())
+  const [editor, setEditor] = useState<{ date: string; transaction?: Transaction } | null>(null)
+
+  function editTransaction(transaction: Transaction) {
+    setEditor({ date: transaction.date, transaction })
+  }
 
   function changeMonth(next: Date) {
     const lastDay = new Date(next.getFullYear(), next.getMonth() + 1, 0).getDate()
@@ -37,7 +45,7 @@ function App() {
     <AppLayout page={page} onNavigate={navigate}>
       <LedgerStatus state={state} onReload={reload} />
       {state.data && page === 'home' && (
-        <HomePage data={state.data} month={month} onMonthChange={changeMonth} onHistory={() => navigate('history')} />
+        <HomePage data={state.data} month={month} onMonthChange={changeMonth} onHistory={() => navigate('history')} onEdit={editTransaction} />
       )}
       {state.data && page === 'history' && (
         <HistoryPage
@@ -46,10 +54,13 @@ function App() {
           onMonthChange={changeMonth}
           selectedDay={selectedDay}
           onSelectDay={setSelectedDay}
+          onAdd={(date) => setEditor({ date })}
+          onEdit={editTransaction}
         />
       )}
       {state.data && page === 'stats' && <StatsPage data={state.data} month={month} onMonthChange={changeMonth} />}
-      {state.data && page === 'settings' && <SettingsPage data={state.data} refreshing={state.status === 'refreshing'} refreshError={state.error} onReload={reload} />}
+      {state.data && page === 'settings' && <SettingsPage data={state.data} ledger={ledger} />}
+      {editor && <TransactionEditor date={editor.date} transaction={editor.transaction} ledger={ledger} onClose={() => setEditor(null)} />}
       <PwaUpdateNotice />
     </AppLayout>
   )

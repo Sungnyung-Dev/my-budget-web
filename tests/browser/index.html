@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Ledger CRUD UI 검증 · 모의 HTTP</title></head>
+<body style="margin:16px;font-family:system-ui;background:#eee">
+  <h1 style="font-size:20px">Ledger CRUD UI 검증 · 모의 HTTP</h1>
+  <p>운영 API에 연결하지 않습니다. 모든 요청은 테스트 메모리에서 처리합니다.</p>
+  <pre id="results" aria-live="polite">검증 준비 중…</pre>
+  <div id="preview"></div>
+  <script type="module">
+    const available = [[390,844],[320,568],[768,1024],[1280,800]]
+    const width = Number(new URLSearchParams(location.search).get('width'))
+    const selected = available.find((size) => size[0] === width)
+    const sizes = selected ? [selected] : available
+    const results = document.querySelector('#results')
+    const preview = document.querySelector('#preview')
+    const lines = []
+    let index = 0
+    let frame
+    function next() {
+      const [width,height] = sizes[index]
+      frame = document.createElement('iframe')
+      frame.title = `${width}px 가계부 검증`
+      frame.width = width
+      frame.height = height
+      frame.style = 'border:1px solid #bbb;background:white;display:block'
+      frame.src = `./frame.html?full=${!selected && index === 0}&width=${width}`
+      preview.replaceChildren(frame)
+      results.textContent = [...lines, `${width}px 검증 중…`].join('\n')
+    }
+    window.addEventListener('message', (event) => {
+      if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data?.type !== 'ledger-ui-qa') return
+      const result = event.data
+      lines.push(`${result.width}px: ${result.passed ? 'PASS' : 'FAIL'} · ${result.checks}개 확인${result.error ? '\n' + result.error : ''}`)
+      if (!result.passed || ++index === sizes.length) {
+        results.textContent = lines.join('\n') + (result.passed ? '\n모든 CRUD·실패 복구·반응형 검증 통과' : '\n검증 실패')
+        document.title = result.passed ? 'PASS · Ledger CRUD UI' : 'FAIL · Ledger CRUD UI'
+      } else next()
+    })
+    next()
+  </script>
+</body>
+</html>

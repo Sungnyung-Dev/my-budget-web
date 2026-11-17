@@ -1,42 +1,42 @@
 import { useEffect, useRef, useState } from 'react'
 import { BottomSheet } from './BottomSheet'
-import type { CategoryType } from './CategoryEditor'
+import type { Transaction, TransactionType } from '../domain/types'
+import { parseAmount } from '../domain/ledger'
+import type { LedgerController } from '../state/useLedger'
+import { useWriteAction } from '../state/useWriteAction'
+import { WriteStatus } from './WriteStatus'
 import './TransactionEditor.css'
 
-export type TransactionCategory = { id: string; type: CategoryType; name: string }
-export type EditableTransaction = {
-  id: string
-  type: CategoryType
-  amount: number
-  categoryId: string
-  memo: string
+export function TransactionEditor({ date, transaction, ledger, onClose }: {
   date: string
-}
-
-export function TransactionEditor({ date, transaction, categories, onClose }: {
-  date: string
-  transaction?: EditableTransaction
-  categories?: readonly TransactionCategory[]
+  transaction?: Transaction
+  ledger: LedgerController
   onClose: () => void
 }) {
-  const [type, setType] = useState<CategoryType>(transaction?.type ?? 'expense')
+  const { state } = ledger
+  const categories = state.data?.categories ?? []
+  const busy = state.saving || state.status === 'refreshing'
+  const blocked = busy || state.needsRefresh
+  const { failure, run } = useWriteAction(onClose)
+  const [type, setType] = useState<TransactionType>(transaction?.type ?? 'expense')
   const [amount, setAmount] = useState(transaction ? transaction.amount.toLocaleString('ko-KR') : '')
-  const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? categories?.find((category) => category.type === 'expense')?.id ?? '')
+  const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? categories.find((category) => category.type === 'expense')?.id ?? '')
   const [memo, setMemo] = useState(transaction?.memo ?? '')
   const [amountTouched, setAmountTouched] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const deleteButton = useRef<HTMLButtonElement>(null)
   const deleteCancel = useRef<HTMLButtonElement>(null)
-  const options = categories?.filter((category) => category.type === type) ?? []
+  const options = categories.filter((category) => category.type === type)
   const categoryValid = options.some((category) => category.id === categoryId)
+  const missing = !!transaction && !state.data?.transactions.some((row) => row.id === transaction.id)
   const fixedDate = transaction?.date ?? date
   const [year, month, day] = fixedDate.split('-').map(Number)
   const dateLabel = `${year}년 ${month}월 ${day}일 ${'일월화수목금토'[new Date(year, month - 1, day).getDay()]}요일`
-  const amountValue = Number(amount.trim().replace(/,/g, ''))
-  const amountError = !/^(?:\d+|\d{1,3}(?:,\d{3})+)$/.test(amount.trim())
-    ? '금액은 소수점 없이 원 단위 정수로 입력해 주세요.'
-    : !Number.isSafeInteger(amountValue) || amountValue < 1 || amountValue > 999_999_999_999
-      ? '금액은 1원부터 999,999,999,999원까지 입력할 수 있습니다.' : ''
+  let amountValue = 0
+  let amountError = ''
+  try { amountValue = parseAmount(amount) } catch (error) {
+    amountError = (error as Error).message
+  }
 
   useEffect(() => {
     if (confirmDelete) {
@@ -45,10 +45,21 @@ export function TransactionEditor({ date, transaction, categories, onClose }: {
     }
   }, [confirmDelete])
 
-  function changeType(next: CategoryType) {
+  function changeType(next: TransactionType) {
     if (next === type) return
     setType(next)
-    setCategoryId(categories?.find((category) => category.type === next)?.id ?? '')
+    setCategoryId(categories.find((category) => category.type === next)?.id ?? '')
+  }
+
+  function save() {
+    setAmountTouched(true)
+    if (blocked || confirmDelete || missing || amountError || !categoryValid || memo.length > 100) return
+    const input = { type, amount: amountValue, categoryId, memo, date: fixedDate }
+    void run(() => transaction ? ledger.updateTransaction(transaction.id, input) : ledger.createTransaction(input))
+  }
+
+  function remove() {
+    if (transaction && !blocked && !missing) void run(() => ledger.deleteTransaction(transaction.id))
   }
 
   return (
@@ -57,8 +68,9 @@ export function TransactionEditor({ date, transaction, categories, onClose }: {
       title={transaction ? '거래 수정' : '거래 추가'}
       closeLabel="거래 입력 취소하고 닫기"
       descriptionId="transaction-connection"
+      busy={busy}
       onClose={onClose}
-      onSubmit={(event) => { event.preventDefault(); setAmountTouched(true) }}
+      onSubmit={(event) => { event.preventDefault(); save() }}
     >
       <div className="transaction-type" role="group" aria-label="거래 유형">
         <button type="button" aria-pressed={type === 'expense'} onClick={() => changeType('expense')}>지출</button>
@@ -95,7 +107,7 @@ export function TransactionEditor({ date, transaction, categories, onClose }: {
             ))}
           </div>
         ) : (
-          <p className="transaction-categories-empty">이 유형으로 서버에 등록된 카테고리가 없습니다.</p>
+          <p className="transaction-categories-empty">이 유형으로 서버에 등록된 카테고리가 없습니다. 설정의 카테고리 관리에서 먼저 추가해 주세요.</p>
         )}
         {options.length > 0 && !categoryValid && <p className="sheet-error" role="alert">거래 유형에 맞는 카테고리를 선택해 주세요.</p>}
       </fieldset>
@@ -114,16 +126,17 @@ export function TransactionEditor({ date, transaction, categories, onClose }: {
         onChange={(event) => setMemo(event.target.value)}
       />
       <p id="transaction-error" className="sheet-error" role="alert">{amountTouched ? amountError : ''}{memo.length > 100 ? ' 메모는 100자까지 입력할 수 있습니다.' : ''}</p>
-      <p id="transaction-connection" className="sheet-notice">현재는 읽기 전용입니다. 입력한 내용은 저장·수정·삭제되지 않습니다.</p>
-      <button type="submit" className="sheet-primary" disabled title="현재는 읽기 전용입니다.">{transaction ? '변경사항 저장' : '거래 저장'}</button>
-      {transaction && !confirmDelete && <button ref={deleteButton} type="button" className="sheet-secondary" disabled onClick={() => setConfirmDelete(true)}>거래 삭제</button>}
+      <WriteStatus id="transaction-connection" state={state} failure={failure} onReload={ledger.reload} />
+      {missing && <p className="sheet-warning" role="alert">이 거래는 서버 목록에 없습니다. 시트를 닫고 처리 결과를 확인해 주세요.</p>}
+      <button type="submit" className="sheet-primary" disabled={blocked || missing || confirmDelete || !categoryValid}>{state.saving ? '저장 중…' : transaction ? '변경사항 저장' : '거래 저장'}</button>
+      {transaction && !confirmDelete && <button ref={deleteButton} type="button" className="sheet-secondary" disabled={blocked || missing} onClick={() => setConfirmDelete(true)}>거래 삭제</button>}
       {confirmDelete && (
         <section className="sheet-delete-confirm" aria-labelledby="transaction-delete-heading">
           <h3 id="transaction-delete-heading">이 거래를 삭제할까요?</h3>
-          <p>현재는 읽기 전용이므로 삭제할 수 없습니다.</p>
+          <p>삭제한 거래는 복구할 수 없습니다.</p>
           <div className="transaction-confirm-buttons">
             <button ref={deleteCancel} type="button" className="sheet-secondary" onClick={() => { setConfirmDelete(false); requestAnimationFrame(() => deleteButton.current?.focus()) }}>삭제 취소</button>
-            <button type="button" className="sheet-primary" disabled>삭제 확인</button>
+            <button type="button" className="sheet-primary" disabled={blocked || missing} onClick={remove}>삭제 확인</button>
           </div>
         </section>
       )}

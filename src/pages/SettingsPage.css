@@ -76,8 +76,7 @@
 }
 
 .categories-back::before,
-.categories-add::before,
-.categories-preview::before {
+.categories-add::before {
   position: absolute;
   top: 50%;
   right: 0;
@@ -115,14 +114,6 @@
   color: var(--ledger-muted);
   font-size: 10px;
   white-space: nowrap;
-}
-
-.categories-preview {
-  position: relative;
-  display: block;
-  margin: 15px auto 0;
-  color: #666;
-  font-size: 11px;
 }
 
 @media (min-width: 1024px) {

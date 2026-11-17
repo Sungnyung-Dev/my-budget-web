@@ -4,14 +4,15 @@ import { CategoryBars } from '../components/CategoryBars'
 import { TransactionList } from '../components/TransactionList'
 import { ledgerPeriod } from '../app/ledgerViews'
 import { formatMoney, signedMoney } from '../domain/formatters'
-import type { LedgerData } from '../domain/types'
+import type { LedgerData, Transaction } from '../domain/types'
 import './HomePage.css'
 
-export function HomePage({ data, month, onMonthChange, onHistory }: {
+export function HomePage({ data, month, onMonthChange, onHistory, onEdit }: {
   data: LedgerData
   month: Date
   onMonthChange: (date: Date) => void
   onHistory: () => void
+  onEdit: (row: Transaction) => void
 }) {
   const { rows, totals, spending, recent } = ledgerPeriod(data, month)
   return (
@@ -54,7 +55,7 @@ export function HomePage({ data, month, onMonthChange, onHistory }: {
                 전체 보기 <span aria-hidden="true">›</span>
               </button>
             </div>
-            {recent.length ? <TransactionList rows={recent} categories={data.categories} showDate /> : <div className="ledger-empty">최근 거래가 없습니다.</div>}
+            {recent.length ? <TransactionList rows={recent} categories={data.categories} showDate onEdit={onEdit} /> : <div className="ledger-empty">최근 거래가 없습니다.</div>}
           </section>
         </div>
       </div>

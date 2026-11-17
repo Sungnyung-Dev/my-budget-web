@@ -83,6 +83,15 @@
   display: none;
 }
 
+.sheet-fields {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sheet-notice p { margin: 0; }
+
 .sheet-label {
   display: block;
   margin: 0 0 8px;
