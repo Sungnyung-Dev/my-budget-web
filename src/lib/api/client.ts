@@ -1,3 +1,4 @@
+import { getCsrfToken, invalidateAuth } from './authContext.ts'
 export const DEFAULT_TIMEOUT_MS = 10_000
 
 export type ApiErrorCode = 'CONFIGURATION' | 'INVALID_REQUEST' | 'HTTP' | 'NETWORK' | 'TIMEOUT' | 'INVALID_RESPONSE' | 'ABORTED'
@@ -16,11 +17,14 @@ export class ApiError extends Error {
 
 export interface ApiRequestOptions {
   signal?: AbortSignal
+  expectedStatus?: 200 | 201
 }
 
 interface ApiClientOptions {
   timeoutMs?: number
   fetchImpl?: typeof globalThis.fetch
+  getCsrfToken?: () => string | null
+  onUnauthorized?: (token: string | null) => void
 }
 
 function requestPath(path: string): string {
@@ -31,6 +35,8 @@ function requestPath(path: string): string {
 }
 
 function httpMessage(status: number): string {
+  if (status === 401) return '로그인이 필요합니다.'
+  if (status === 403) return '보안 확인에 실패했습니다. 로그인 상태를 다시 확인해 주세요.'
   if (status === 404) return '요청한 데이터를 찾을 수 없습니다.'
   if (status === 429) return '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.'
   if (status >= 500) return '서버에 일시적인 문제가 있습니다. 잠시 후 다시 시도해 주세요.'
@@ -56,7 +62,7 @@ async function readJson<T>(response: Response, validate: (value: unknown) => T, 
   }
 }
 
-export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl }: ApiClientOptions = {}) {
+export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl, getCsrfToken: csrf = () => null, onUnauthorized }: ApiClientOptions = {}) {
   async function send<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string,
     read: (response: Response, signal: AbortSignal) => Promise<T>, body?: object, { signal }: ApiRequestOptions = {}): Promise<T> {
     const url = requestPath(path)
@@ -88,15 +94,20 @@ export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl }: A
       }, timeoutMs)
     })
     const request = async () => {
+      const token = csrf()
       const response = await (fetchImpl ?? globalThis.fetch)(url, {
         method,
-        headers: { Accept: 'application/json', ...(json !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+        headers: { Accept: 'application/json', ...(json !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          ...(method !== 'GET' && token ? { 'X-CSRF-Token': token } : {}),
+          ...(method !== 'GET' && path.startsWith('/api/v1/auth/') ? { 'X-Budget-Request': '1' } : {}),
+        },
         ...(json !== undefined ? { body: json } : {}),
         credentials: 'same-origin',
         cache: 'no-store',
         signal: controller.signal,
       })
       controller.signal.throwIfAborted()
+      if (response.status === 401 && !path.startsWith('/api/v1/auth/')) onUnauthorized?.(token)
       if (!response.ok) throw new ApiError('HTTP', httpMessage(response.status), response.status)
       return read(response, controller.signal)
     }
@@ -117,7 +128,12 @@ export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl }: A
       return send('GET', path, (response, signal) => readJson(response, validate, signal), undefined, options)
     },
     post<T>(path: string, body: object, validate: (value: unknown) => T, options?: ApiRequestOptions): Promise<T> {
-      return send('POST', path, (response, signal) => readJson(response, validate, signal, 201), body, options)
+      return send('POST', path, (response, signal) => readJson(response, validate, signal, options?.expectedStatus ?? 201), body, options)
+    },
+    postEmpty(path: string, options?: ApiRequestOptions): Promise<void> {
+      return send('POST', path, async response => {
+        if (response.status !== 204) throw invalidResponse(response.status)
+      }, undefined, options)
     },
     patch<T>(path: string, body: object, validate: (value: unknown) => T, options?: ApiRequestOptions): Promise<T> {
       return send('PATCH', path, (response, signal) => readJson(response, validate, signal, 200), body, options)
@@ -132,4 +148,4 @@ export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl }: A
 
 export type ApiClient = ReturnType<typeof createApiClient>
 
-export const apiClient = createApiClient()
+export const apiClient = createApiClient({ getCsrfToken, onUnauthorized: invalidateAuth })

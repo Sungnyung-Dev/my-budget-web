@@ -6,8 +6,9 @@ import type { LedgerController } from '../state/useLedger'
 import { formatNumber } from '../domain/formatters'
 import './SettingsPage.css'
 
-export function SettingsPage({ data, ledger }: {
+export function SettingsPage({ data, ledger, onLogout }: {
   data: LedgerData
+  onLogout?: () => Promise<void>
   ledger: LedgerController
 }) {
   const [view, setView] = useState<'settings' | 'categories'>('settings')
@@ -51,6 +52,12 @@ export function SettingsPage({ data, ledger }: {
               <span>서버 데이터 새로고침</span><span className="settings-value">{refreshing ? '조회 중…' : state.error || state.needsRefresh ? '다시 확인' : '조회 완료'}</span>
             </button>
           </section>
+          {onLogout && <section aria-labelledby="settings-auth-heading">
+            <h2 id="settings-auth-heading" className="settings-label">로그인</h2>
+            <button type="button" className="settings-row" disabled={state.saving} onClick={() => void onLogout()}>
+              <span>로그아웃</span><span className="settings-arrow" aria-hidden="true">›</span>
+            </button>
+          </section>}
           <section aria-labelledby="settings-info-heading">
             <h2 id="settings-info-heading" className="settings-label">정보</h2>
             <dl className="settings-values">

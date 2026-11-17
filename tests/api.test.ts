@@ -39,7 +39,7 @@ test('기본 클라이언트는 동일 출처 인증을 허용한 상대 경로 
   assert.equal(options?.cache, 'no-store')
   assert.ok(options?.signal instanceof AbortSignal)
   assert.equal(options.signal.aborted, false)
-  assert.deepEqual(Object.keys(apiClient), ['get', 'post', 'patch', 'delete'])
+  assert.deepEqual(Object.keys(apiClient), ['get', 'post', 'postEmpty', 'patch', 'delete'])
 })
 
 test('공통 GET은 주입한 fetch와 응답 검증 함수를 사용한다', async () => {

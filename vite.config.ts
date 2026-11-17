@@ -6,7 +6,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://budget-api.ecoma.kro.kr',
+        // 로컬 테스트 백엔드만 사용합니다. 운영 API를 개발 프록시로 사용하지 않습니다.
+        target: 'http://127.0.0.1:13004',
         changeOrigin: true,
         secure: true,
       },

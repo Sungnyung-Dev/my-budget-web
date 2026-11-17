@@ -42,7 +42,7 @@ try {
 | `INVALID_REQUEST` | 입력 필드·값·ID 또는 JSON 직렬화 실패, 전송 전 거부 | 없음 |
 | `ABORTED` | 호출자가 취소한 요청 | 없음 |
 
-GET과 거래·카테고리 CRUD 모두 `credentials: 'same-origin'`을 사용하여 동일 출처 요청에 브라우저가 관리하는 HTTP Basic 인증 정보와 쿠키를 사용할 수 있도록 합니다. 사용자명·비밀번호·인증 헤더는 앱 코드나 환경변수에 저장하거나 직접 구성하지 않습니다. `cache: 'no-store'`로 브라우저 HTTP 캐시를 사용하지 않습니다. 기존 Service Worker 설정은 변경하지 않았으며 API 응답 캐시·오프라인 저장은 없습니다.
+GET과 거래·카테고리 CRUD 모두 `credentials: 'same-origin'`을 사용하여 동일 출처 요청에 브라우저가 관리하는 HttpOnly 세션 쿠키를 사용할 수 있도록 합니다. 사용자명·비밀번호·인증 헤더는 앱 코드나 환경변수에 저장하거나 직접 구성하지 않습니다. `cache: 'no-store'`로 브라우저 HTTP 캐시를 사용하지 않습니다. 기존 Service Worker 설정은 변경하지 않았으며 API 응답 캐시·오프라인 저장은 없습니다.
 
 ## 쓰기 함수와 계약
 
@@ -63,7 +63,7 @@ GET과 거래·카테고리 CRUD 모두 `credentials: 'same-origin'`을 사용�
 
 ## 개발과 배포 경로
 
-`npm run dev`에서는 브라우저의 `/api/v1/ledger` 요청을 Vite가 `https://budget-api.ecoma.kro.kr/api/v1/ledger`로 전달합니다. `/api`를 제거하지 않으며 `changeOrigin: true`, TLS 인증서 검증(`secure: true`)을 사용합니다. 브라우저는 개발 서버의 동일 출처로 요청하므로 백엔드의 브라우저 CORS 허용 설정을 전제로 하지 않습니다.
+`npm run dev`에서는 브라우저의 `/api/v1/ledger` 요청을 Vite가 `http://127.0.0.1:13004/api/v1/ledger`로 전달합니다. 운영 API를 개발 프록시로 사용하지 않습니다. `/api`를 제거하지 않으며 `changeOrigin: true`, TLS 인증서 검증(`secure: true`)을 사용합니다. 브라우저는 개발 서버의 동일 출처로 요청하므로 백엔드의 브라우저 CORS 허용 설정을 전제로 하지 않습니다.
 
 **개발 프록시는 `dist/`에 포함되지 않습니다.** 실제 배포에서는 웹앱과 같은 HTTPS 출처의 `/api`를 기존 백엔드로 전달하는 배포 호스트의 reverse proxy가 별도로 필요합니다. `/api`에 SPA HTML을 반환하면 `INVALID_RESPONSE`가 발생합니다. 별도 출처의 API를 브라우저에서 직접 부르도록 바꾸면 HTTPS·CORS 조건을 따로 검토해야 합니다. 이번 작업에서는 운영 서버·DB·Nginx 설정을 바꾸지 않았습니다.
 
@@ -78,3 +78,10 @@ Vite preview는 기본적으로 `server.proxy`를 상속하므로, 혼동을 막
 2026-11-16 개발 서버의 앱 HTTP 200과 Vite 프록시를 통한 읽기 전용 `GET /api/v1/ledger` HTTP 200 및 웹 도메인 검증 통과를 확인했습니다. 실제 응답은 메모리에서만 검증했으며 거래 내용은 로그·파일·문서에 기록하지 않았습니다. 브라우저 화면 연결·실제 배포 출처의 라우팅·실제 iPhone 네트워크 동작은 이번 검증에 포함하지 않습니다.
 
 현재 조회 상태(`loading`·`ready`·`error`·`refreshing`)와 쓰기 상태(`saving`·`needsRefresh`)는 [React 상태 계층](../../state/README.md)에 구현했습니다. 기존 조회·도메인·화면 테스트 185개에 쓰기 API·상태 테스트 214개를 더해 총 399개가 통과했습니다. 모든 HTTP 테스트는 주입된 모의 fetch·Response·가상 타이머를 사용하며 운영 서버에 POST·PATCH·DELETE를 보내지 않습니다. 이 수치는 API·상태 계층의 Node 테스트이며, 이후 연결한 UI의 브라우저 검증은 [별도 절차](../../../tests/browser/README.md)로 실행합니다. PWA 설정과 기존 API·조회 계약을 유지하며 로컬 저장은 구현하지 않습니다.
+
+
+## 인증 클라이언트
+
+`authApi.ts`는 로그인 200·세션 조회 200·로그아웃 204를 처리합니다. 기존 CRUD 생성의 기본 201 계약은 유지합니다. 서버 쿠키는 JS에서 읽지 않으며 CSRF 토큰만 메모리에 보관해 쓰기 요청의 `X-CSRF-Token`에 추가합니다. 금융 API 401은 인증 상태를 해제하고 이전 장부를 언마운트합니다. 늦은 이전 요청의 401이 새로운 로그인 상태를 덮어쓰지 않게 요청 당시의 CSRF 값으로 구분합니다. 로그인과 로그아웃은 자동 재시도하지 않습니다.
+
+실제 인증은 HTTPS 전용입니다. 기본 Vite HTTP 서버는 기존 모의 CRUD UI 테스트에 사용할 수 있고, 실제 쿠키·로그인 검증은 격리 HTTPS 프록시를 사용해야 합니다.

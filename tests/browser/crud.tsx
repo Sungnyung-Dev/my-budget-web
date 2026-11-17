@@ -446,9 +446,9 @@ async function layouts() {
 }
 
 try {
-  const { default: App } = await import('../../src/App')
+  const { LedgerApp: App } = await import('../../src/App')
   readHold = true
-  createRoot(get('#root')).render(<StrictMode><App /></StrictMode>)
+  createRoot(get('#root')).render(<StrictMode><App onLogout={async () => {}} /></StrictMode>)
   await until(() => releaseRead, '최초 조회 대기')
   check(requests.length === 1, '최초 GET 한 번')
   check(!document.querySelector('.home-page') && get('.ledger-status').textContent?.includes('불러오는 중'), '최초 로딩을 0원 화면과 구분')

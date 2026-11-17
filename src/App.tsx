@@ -11,9 +11,11 @@ import { useLedger } from './state/useLedger'
 import { LedgerStatus } from './components/LedgerStatus'
 import { TransactionEditor } from './components/TransactionEditor'
 import type { Transaction } from './domain/types'
+import { useAuth } from './state/useAuth'
+import { LoginPage } from './pages/LoginPage'
 import './App.css'
 
-function App() {
+export function LedgerApp({ onLogout }: { onLogout: () => Promise<void> }) {
   const ledger = useLedger()
   const { state, reload } = ledger
   const [page, setPage] = useState<PageId>('home')
@@ -59,11 +61,23 @@ function App() {
         />
       )}
       {state.data && page === 'stats' && <StatsPage data={state.data} month={month} onMonthChange={changeMonth} />}
-      {state.data && page === 'settings' && <SettingsPage data={state.data} ledger={ledger} />}
+      {state.data && page === 'settings' && <SettingsPage data={state.data} ledger={ledger} onLogout={onLogout} />}
       {editor && <TransactionEditor date={editor.date} transaction={editor.transaction} ledger={ledger} onClose={() => setEditor(null)} />}
-      <PwaUpdateNotice />
     </AppLayout>
   )
 }
 
+function App() {
+  const auth = useAuth()
+  const { state } = auth
+  return <>
+    {state.status === 'authenticated' && <LedgerApp onLogout={auth.logout} />}
+    {state.status === 'anonymous' && <LoginPage busy={state.busy} message={state.message} onLogin={auth.login} />}
+    {state.status === 'checking' && <main className="auth-status" role="status">로그인 상태를 확인하고 있습니다.</main>}
+    {state.status === 'error' && <main className="auth-status"><p role="alert">{state.message}</p>
+      <button className="primary-button" onClick={() => void (state.retry === 'logout' ? auth.logout() : auth.check())}>다시 시도</button>
+    </main>}
+    <PwaUpdateNotice />
+  </>
+}
 export default App
