@@ -1,6 +1,6 @@
-# Ledger 조회 API
+# Ledger HTTP API
 
-`client.ts`는 조회 전용 HTTP 클라이언트, `ledgerApi.ts`는 전체 Ledger 조회 함수입니다. 인접한 iOS의 `src/api/client.ts`·`ledgerApi.ts`와 백엔드의 Ledger 라우트·서비스·DTO를 읽기 전용으로 확인했습니다. React나 저장소에 의존하지 않으며 모듈을 import하는 것만으로 요청하지 않습니다.
+`client.ts`는 공통 HTTP 클라이언트, `ledgerApi.ts`는 전체 Ledger 조회, `transactionApi.ts`·`categoryApi.ts`는 쓰기 함수입니다. 인접한 iOS의 API·Provider와 백엔드의 라우트·검증·서비스 계약을 읽기 전용으로 확인했습니다. React나 저장소에 의존하지 않으며 모듈을 import하는 것만으로 요청하지 않습니다. 현재 화면은 조회만 연결되어 있습니다.
 
 ## 계약
 
@@ -28,7 +28,7 @@ try {
 // 컴포넌트 해제·조회 교체 시 controller.abort()로 취소할 수 있습니다.
 ```
 
-취소가 필요 없으면 `await getLedger()`로 조회합니다. `createApiClient({ timeoutMs, fetchImpl })`로 대기 시간과 테스트용 fetch를 주입할 수 있습니다. 공통 `client.get(path, validate, { signal }?)`는 선행 `/`가 있는 동일 출처 상대 경로만 허용합니다. 절대 URL·`//`·공백·역슬래시·fragment는 설정 오류입니다. 생성·수정·삭제 메서드는 제공하지 않습니다.
+취소가 필요 없으면 `await getLedger()`로 조회합니다. `createApiClient({ timeoutMs, fetchImpl })`로 대기 시간과 테스트용 fetch를 주입할 수 있습니다. 공통 클라이언트는 선행 `/`가 있는 동일 출처 상대 경로만 허용합니다. 절대 URL·`//`·공백·역슬래시·fragment는 설정 오류입니다. `get`·`post`·`patch`·`delete` 모두 같은 요청·타임아웃·취소 경로를 사용합니다.
 
 기본 대기 시간은 **10,000ms**이며 요청 시작부터 헤더와 본문 수신 완료까지 같은 타이머를 유지합니다. 타임아웃 또는 외부 `AbortSignal`은 내부 fetch 신호를 중단합니다. fetch가 취소를 무시해도 반환 Promise는 종료되고 뒤늦게 도착한 데이터를 검증하지 않습니다. 완료 시 타이머·외부 신호 리스너를 정리하며 동시 요청의 취소는 서로 독립적입니다. 자동 재시도는 없습니다.
 
@@ -39,9 +39,27 @@ try {
 | `TIMEOUT` | 설정된 대기 시간 초과 | 없음 |
 | `INVALID_RESPONSE` | JSON이 필요한데 204/205, 잘못된 JSON 또는 도메인 검증 실패 | HTTP 상태 |
 | `CONFIGURATION` | 잘못된 상대 경로 또는 대기 시간(정수 1–2,147,483,647ms) | 없음 |
-| `ABORTED` | 호출자가 취소한 조회 | 없음 |
+| `INVALID_REQUEST` | 입력 필드·값·ID 또는 JSON 직렬화 실패, 전송 전 거부 | 없음 |
+| `ABORTED` | 호출자가 취소한 요청 | 없음 |
 
 `credentials: 'omit'`으로 쿠키를 전송하지 않고 `cache: 'no-store'`로 브라우저 HTTP 캐시를 사용하지 않습니다. 인증 헤더·API 키·비밀번호·브라우저 환경변수는 추가하지 않았습니다. 기존 Service Worker 설정은 변경하지 않았으며 API 응답 캐시·오프라인 저장은 없습니다.
+
+## 쓰기 함수와 계약
+
+각 함수의 마지막 인수는 `(client = apiClient, options?: { signal })`입니다. 생성·수정에는 JSON 본문과 `Content-Type: application/json`을 보내고, 삭제에는 본문·Content-Type을 보내지 않습니다.
+
+| 함수 | HTTP 경로 | 입력 | 성공 |
+| --- | --- | --- | --- |
+| `createTransaction(input, client?, options?)` | POST `/api/v1/transactions` | `date`, `type`, `amount`, `categoryId`, `memo` 전체 | 201, 서버 ID가 있는 `Transaction` |
+| `updateTransaction(id, input, client?, options?)` | PATCH `/api/v1/transactions/:id` | 위 필드 중 하나 이상 | 200, 최종 `Transaction` |
+| `deleteTransaction(id, client?, options?)` | DELETE `/api/v1/transactions/:id` | 문자열 ID | 204, `void` |
+| `createCategory(input, client?, options?)` | POST `/api/v1/categories` | `name`, `type`, `symbol` | 201, 서버 ID가 있는 `Category` |
+| `updateCategory(id, input, client?, options?)` | PATCH `/api/v1/categories/:id` | `name`만 | 200, 최종 `Category` |
+| `deleteCategory(id, client?, options?)` | DELETE `/api/v1/categories/:id` | 문자열 ID | 204, `void` |
+
+허용하지 않은 필드·생성 ID·빈 PATCH를 거부하고 이름·메모를 trim합니다. 날짜·정수 금액·열거 값·길이·문자열 ID(1–191자)를 전송 전에 검사합니다. ID는 단일 URL 세그먼트로 인코딩하며 `.`·`..`와 인코딩 불가 ID는 거부합니다. 생성·수정 응답은 기존 도메인 단건 검증기를 사용하고 수정 응답 ID가 대상과 다르면 `INVALID_RESPONSE`입니다. 생성 201·수정 200·삭제 204 외 성공 상태도 최종 처리 결과로 간주하지 않습니다. 삭제 204에서는 JSON 파싱을 하지 않습니다.
+
+저수준 API 함수는 실패 시 `ApiError`를 던집니다. 화면에서는 [공통 상태 계층의 같은 이름의 6개 작업](../../state/README.md)을 사용해야 전체 Ledger 검증·중복 차단·불확실 결과 처리가 함께 적용됩니다. 전송된 쓰기의 취소는 서버 롤백을 보장하지 않으므로, 상태 계층은 이를 재조회가 필요한 결과로 분류합니다. 자동 쓰기 재시도는 없습니다.
 
 ## 개발과 배포 경로
 
@@ -59,4 +77,4 @@ Vite preview는 기본적으로 `server.proxy`를 상속하므로, 혼동을 막
 
 2026-11-16 개발 서버의 앱 HTTP 200과 Vite 프록시를 통한 읽기 전용 `GET /api/v1/ledger` HTTP 200 및 웹 도메인 검증 통과를 확인했습니다. 실제 응답은 메모리에서만 검증했으며 거래 내용은 로그·파일·문서에 기록하지 않았습니다. 브라우저 화면 연결·실제 배포 출처의 라우팅·실제 iPhone 네트워크 동작은 이번 검증에 포함하지 않습니다.
 
-현재 조회 상태(`loading`·`ready`·`error`·`refreshing`)와 취소/재조회는 [React 상태 계층](../../state/README.md)에 연결했습니다. 위 API 단독 검증에 더해 상태·화면 어댑터 테스트 22개를 추가했고 전체 `npm test`는 185개입니다. 정상 빈 데이터와 조회 실패를 분리하며 실패 시 빈 Ledger를 생성하지 않습니다. 다음 단계는 별도 범위의 CRUD이며 로컬 저장은 구현하지 않습니다.
+현재 조회 상태(`loading`·`ready`·`error`·`refreshing`)와 쓰기 상태(`saving`·`needsRefresh`)는 [React 상태 계층](../../state/README.md)에 구현했습니다. 기존 조회·도메인·화면 테스트 185개에 쓰기 API·상태 테스트 214개를 더해 총 399개가 통과했습니다. 모든 HTTP 테스트는 주입된 모의 fetch·Response·가상 타이머를 사용하며 운영 서버에 POST·PATCH·DELETE를 보내지 않습니다. 화면·버튼·CSS는 이번 작업에서 변경하지 않았고 PWA 설정과 기존 조회 계약도 유지합니다. 다음 단계는 UI 버튼 연결이며 로컬 저장은 구현하지 않습니다.

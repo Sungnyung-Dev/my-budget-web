@@ -29,9 +29,9 @@ test('최초 조회 전에는 데이터가 null이며 성공한 전체 Ledger만
     return response(ledger)
   })
   t.after(store.start())
-  assert.deepEqual(store.getSnapshot(), { status: 'loading', data: null, error: null })
+  assert.deepEqual(store.getSnapshot(), { status: 'loading', data: null, error: null, saving: false, needsRefresh: false })
   assert.equal(await store.reload(), true)
-  assert.deepEqual(store.getSnapshot(), { status: 'ready', data: ledger, error: null })
+  assert.deepEqual(store.getSnapshot(), { status: 'ready', data: ledger, error: null, saving: false, needsRefresh: false })
   assert.equal(calls, 1)
 })
 
@@ -60,7 +60,7 @@ for (const categories of [createLedger().categories, []]) {
     const store = fromHttp(async () => response(ledger))
     t.after(store.start())
     await store.reload()
-    assert.deepEqual(store.getSnapshot(), { status: 'ready', data: ledger, error: null })
+    assert.deepEqual(store.getSnapshot(), { status: 'ready', data: ledger, error: null, saving: false, needsRefresh: false })
   })
 }
 
@@ -100,7 +100,7 @@ test('재조회 중 기존 데이터를 유지하고 실패 뒤에도 같은 데
   await store.reload()
   const previous = store.getSnapshot().data
   const refresh = store.reload()
-  assert.deepEqual(store.getSnapshot(), { status: 'refreshing', data: previous, error: null })
+  assert.deepEqual(store.getSnapshot(), { status: 'refreshing', data: previous, error: null, saving: false, needsRefresh: false })
   next.resolve(new Response(null, { status: 500 }))
   assert.equal(await refresh, false)
   assert.equal(store.getSnapshot().status, 'ready')

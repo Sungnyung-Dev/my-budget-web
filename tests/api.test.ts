@@ -39,7 +39,7 @@ test('기본 클라이언트는 상대 경로 GET으로 전체 Ledger를 검증�
   assert.equal(options?.cache, 'no-store')
   assert.ok(options?.signal instanceof AbortSignal)
   assert.equal(options.signal.aborted, false)
-  assert.deepEqual(Object.keys(apiClient), ['get'])
+  assert.deepEqual(Object.keys(apiClient), ['get', 'post', 'patch', 'delete'])
 })
 
 test('공통 GET은 주입한 fetch와 응답 검증 함수를 사용한다', async () => {
