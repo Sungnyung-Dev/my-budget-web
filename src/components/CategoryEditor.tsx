@@ -3,6 +3,7 @@ import { BottomSheet } from './BottomSheet'
 import type { Category, TransactionType } from '../domain/types'
 import { validateCategoryName } from '../domain/validateLedger'
 import { ledgerCategories } from '../app/ledgerViews'
+import { formatNumber } from '../domain/formatters'
 import type { LedgerController } from '../state/useLedger'
 import { useWriteAction } from '../state/useWriteAction'
 import { WriteStatus } from './WriteStatus'
@@ -87,7 +88,7 @@ export function CategoryEditor({ target, ledger, onClose }: {
           카테고리 삭제
         </button>
       )}
-      {uses > 0 && <p className="sheet-warning">거래 {uses}건에서 사용 중이므로 삭제할 수 없습니다. 이름 변경은 기존 거래에도 적용됩니다.</p>}
+      {uses > 0 && <p className="sheet-warning">거래 {formatNumber(uses)}건에서 사용 중이므로 삭제할 수 없습니다. 이름 변경은 기존 거래에도 적용됩니다.</p>}
       {confirm && (
         <section className="sheet-delete-confirm" aria-labelledby="category-delete-heading">
           <h3 id="category-delete-heading">이 카테고리를 삭제할까요?</h3>

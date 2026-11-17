@@ -5,7 +5,7 @@ import { getCalendarDays } from '../lib/dates'
 import { ledgerPeriod } from '../app/ledgerViews'
 import { dateKey } from '../domain/dates'
 import { forDay, getTotals } from '../domain/selectors'
-import { formatMoney } from '../domain/formatters'
+import { formatNumber, signedMoney } from '../domain/formatters'
 import type { LedgerData, Transaction } from '../domain/types'
 import { TransactionList } from '../components/TransactionList'
 import './HistoryPage.css'
@@ -88,9 +88,9 @@ export function HistoryPage({ data, month, onMonthChange, selectedDay, onSelectD
               <h2 id="selected-date-heading" aria-live="polite">
                 {monthNumber}월 {selectedDay}일 · {weekdays[selectedDate.getDay()]}요일
               </h2>
-              <div className="ledger-day-meta"><span>수입 +{formatMoney(selectedTotals.income)}</span><span>지출 −{formatMoney(selectedTotals.expense)}</span></div>
+              <div className="ledger-day-meta"><span>수입 {signedMoney(selectedTotals.income)}</span><span>지출 {signedMoney(-selectedTotals.expense)}</span></div>
             </div>
-            <span className="ledger-count">{selectedRows.length}건</span>
+            <span className="ledger-count">{formatNumber(selectedRows.length)}건</span>
           </div>
           {selectedRows.length ? <TransactionList rows={selectedRows} categories={data.categories} onEdit={onEdit} /> : (
             <div className="ledger-empty">선택한 날짜에 거래가 없습니다.<br />+ 버튼으로 거래 입력 화면을 열 수 있습니다.</div>

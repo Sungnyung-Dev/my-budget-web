@@ -7,7 +7,7 @@
   <pre id="results" aria-live="polite">검증 준비 중…</pre>
   <div id="preview"></div>
   <script type="module">
-    const available = [[390,844],[320,568],[768,1024],[1280,800]]
+    const available = [[390,844],[320,568],[430,932],[768,1024],[1280,800],[1440,900]]
     const width = Number(new URLSearchParams(location.search).get('width'))
     const selected = available.find((size) => size[0] === width)
     const sizes = selected ? [selected] : available

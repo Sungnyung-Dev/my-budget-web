@@ -1,4 +1,5 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { formatMoney } from '../domain/formatters'
 import './YearChart.css'
 
 export type YearChartMonth = {
@@ -92,7 +93,7 @@ export function YearChart({ year, initialMonth, months }: {
                 className={`year-chart-month ${value?.count ? '' : 'is-missing'}`}
                 style={{ left: index * monthStep }}
                 aria-pressed={selectedMonth === index + 1}
-                aria-label={`${index + 1}월, ${!months ? '데이터 미연결' : value?.count ? `수입 ${value.income.toLocaleString('ko-KR')}원, 지출 ${value.expense.toLocaleString('ko-KR')}원` : '거래 없음'}`}
+                aria-label={`${index + 1}월, ${!months ? '데이터 미연결' : `수입 ${formatMoney(value?.income ?? 0)}원, 지출 ${formatMoney(value?.expense ?? 0)}원${value?.count ? '' : ', 거래 없음'}`}`}
                 onClick={() => setSelectedMonth(index + 1)}
               >{index + 1}월</button>
             ))}

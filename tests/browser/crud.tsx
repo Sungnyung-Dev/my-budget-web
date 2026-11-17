@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import type { Category, LedgerData, Transaction } from '../../src/domain/types'
 import { dateKey } from '../../src/domain/dates'
 import { formatMoney } from '../../src/domain/formatters'
+import { Summary } from '../../src/components/Summary'
 import '../../src/index.css'
 
 // 이 진입점은 Vite로만 실행합니다. 실제 fetch로 넘어가는 경로는 없습니다.
@@ -38,12 +39,15 @@ globalThis.fetch = async (input, options) => {
   if (!/^\/api\/v1\/(ledger|transactions(?:\/[^/]+)?|categories(?:\/[^/]+)?)$/.test(path)) throw new Error('Unexpected mock path')
   requests.push({ method, path, body })
   if (method === 'GET' && path === '/api/v1/ledger') {
-    if (readError) { readError = false; return json({ internal: 'PRIVATE_SERVER_DETAIL' }, 503) }
+    const response = () => {
+      if (readError) { readError = false; return json({ internal: 'PRIVATE_SERVER_DETAIL' }, 503) }
+      return json(server)
+    }
     if (readHold) {
       readHold = false
-      return new Promise<Response>((resolve) => { releaseRead = () => resolve(json(server)) })
+      return new Promise<Response>((resolve) => { releaseRead = () => resolve(response()) })
     }
-    return json(server)
+    return response()
   }
   if (!['POST', 'PATCH', 'DELETE'].includes(method) || path.endsWith('/ledger')) throw new Error('Unexpected mock method')
   const plan = writePlan
@@ -304,12 +308,120 @@ async function fullCrud() {
   await click('서버 데이터 다시 조회', get('.ledger-status'))
   check(!document.body.textContent?.includes('PRIVATE_SERVER_DETAIL'), '전체 화면 내부정보 노출 없음')
   check(!document.body.textContent?.includes('UI 미리보기') && !document.body.textContent?.includes('읽기 전용'), '미연결·개발용 UI 정리')
-  check(requests.filter((row) => row.method === 'GET').length === 5, 'StrictMode·탭 전환·CRUD는 불필요한 GET 없음')
+  check(requests.filter((row) => row.method === 'GET').length === 6, 'StrictMode·탭 전환·CRUD는 불필요한 GET 없음')
+}
+
+async function displayUi() {
+  const holder = document.createElement('div')
+  holder.hidden = true
+  document.body.append(holder)
+  const sample = createRoot(holder)
+  sample.render(<Summary variant="ledger" />)
+  await pause()
+  check([...holder.querySelectorAll('dd')].every((node) => node.textContent === '—'), '준비 전 Summary는 가짜 0 표시 없음')
+  sample.render(<Summary unavailable totals={{ income: 1000, expense: 1, balance: 999 }} />)
+  await pause()
+  check([...holder.querySelectorAll('dd')].every((node) => node.textContent === '—원'), '명시적 미준비 Summary는 기존 값 대신 미연결 표시')
+  sample.unmount(); holder.remove()
+
+  server = { version: 1, categories: structuredClone(fixture.categories), transactions: [] }
+  await nav('설정'); await click('서버 데이터 새로고침')
+  await nav('홈')
+  check(get('.home-amount').textContent === '₩ 0' && get('.home-balance strong').textContent === '0원', '정상 빈 홈 합계·차액은 0')
+  check([...document.querySelectorAll('.home-mini-stats dd')].map((node) => node.textContent).join() === '0원,0건', '정상 빈 홈 수입·건수는 0')
+  await nav('내역')
+  check([...document.querySelectorAll('.summary-strip dd')].every((node) => node.textContent === '0'), '정상 빈 내역의 모든 합계는 0')
+  check(get('.ledger-day-meta').textContent === '수입 0지출 0' && get('.ledger-count').textContent === '0건', '선택일의 빈 수입·지출·건수는 부호 없는 0')
+  await nav('통계')
+  check([...document.querySelectorAll('.summary-strip dd')].every((node) => node.textContent === '0'), '정상 빈 월간 통계 합계 0')
+  check([...document.querySelectorAll('.stats-information dd')].map((node) => node.textContent).join() === '0건,0일,0원', '정상 빈 소비 지표는 0')
+  await click('연간')
+  check([...document.querySelectorAll('.summary-strip dd')].every((node) => node.textContent === '0'), '정상 빈 연간 통계 합계 0')
+  check([...document.querySelectorAll('.year-chart-month')].every((node) => node.getAttribute('aria-label')?.includes('수입 0원, 지출 0원')), '빈 차트도 조회된 월은 실제 0 금액 제공')
+
+  const rows: Transaction[] = Array.from({ length: 996 }, (_, index) => ({
+    id: `count-${index}`, date: today, type: 'expense', amount: 1, categoryId: 'food', memo: '기록',
+  }))
+  for (const [memo, amount] of [['금액 가', 1], ['금액 나', 1000], ['금액 다', 10000], ['금액 라', 1000000]] as const) {
+    rows.push({ id: memo, date: today, type: 'expense', amount, categoryId: 'food', memo })
+  }
+  server.transactions = rows
+  await nav('설정'); await click('서버 데이터 새로고침')
+  check(get('#settings-connection-note').textContent?.includes('거래 1,000건'), '설정 거래 건수 쉼표')
+  await nav('홈')
+  check(get('.home-amount').textContent === '₩ 1,011,997', '홈 금액 쉼표')
+  check(get('.home-balance strong').textContent === '−1,011,997원', '음수 차액의 부호·쉼표')
+  check(get('.home-mini-stats div:last-child dd').textContent === '1,000건', '홈 거래 건수 쉼표')
+  check(get('.category-bar-text strong').textContent === '1,011,997원 · 100%', '카테고리 지출의 공통 금액 포맷')
+  await nav('내역')
+  check(get('.ledger-count').textContent === '1,000건', '내역 거래 건수 쉼표')
+  check(get('.ledger-day-meta').textContent === '수입 0지출 −1,011,997', '날짜별 지출의 공통 부호·쉼표')
+  for (const [memo, text] of [['금액 가', '−1원'], ['금액 나', '−1,000원'], ['금액 다', '−10,000원'], ['금액 라', '−1,000,000원']]) {
+    const row = [...document.querySelectorAll('.ledger-transaction')].find((node) => node.textContent?.includes(memo))
+    check(row?.querySelector('.ledger-transaction-amount')?.textContent === text, `거래 목록 ${text}`)
+  }
+  const main = get('.main-content')
+  const fab = get('.ledger-fab')
+  const wrapper = get('.ledger-fab-position')
+  const rect = fab.getBoundingClientRect()
+  const bottomNav = get('.bottom-nav').getBoundingClientRect()
+  check(rect.width === 45 && rect.height === 45 && getComputedStyle(fab).borderRadius === '50%', 'FAB 45px 원형 크기 유지')
+  check(getComputedStyle(wrapper).backgroundColor === 'rgba(0, 0, 0, 0)' && wrapper.getBoundingClientRect().height === 45, 'FAB 바깥 컨테이너는 투명·버튼 높이만 사용')
+  check(Math.abs(rect.bottom - (innerHeight - bottomNav.height - 13)) <= 1, 'FAB의 탭 위 13px 위치 유지')
+  check(Math.abs(main.getBoundingClientRect().bottom - (innerHeight - bottomNav.height)) <= 1, '스크롤 본문이 FAB 아래까지 이어짐·흰 띠 여백 없음')
+  check(main.contains(document.elementFromPoint(rect.left - 10, rect.top + 22)), 'FAB 바깥 영역은 아래 본문에 접근 가능')
+  main.scrollTop = main.scrollHeight
+  await pause()
+  check(get('.ledger-transactions li:last-child').getBoundingClientRect().bottom <= rect.top - 16, '스크롤 끝의 마지막 거래는 FAB와 겹치지 않음')
+  if (innerWidth < 1024) {
+    const layout = get('.app-layout')
+    layout.style.setProperty('--bottom-nav-height', '110px')
+    check(Math.abs(fab.getBoundingClientRect().bottom - (innerHeight - 110 - 13)) <= 1, 'Safe Area를 포함한 탭 높이 변화에 FAB 위치 대응')
+    layout.style.removeProperty('--bottom-nav-height')
+  }
+  main.scrollTop = 0
+  await click('선택한 날짜에 거래 추가')
+  check(sheetOpen(), '투명 FAB의 기존 생성 클릭 동작 유지')
+  await input('#transaction-amount', '0')
+  const before = writes()
+  await click('거래 저장', sheet())
+  check(writes() === before && get('#transaction-error').textContent?.includes('1원부터'), '표시 변경 뒤에도 금액 0 입력 검증 유지')
+  await input('#transaction-amount', '1.5'); await click('거래 저장', sheet())
+  check(writes() === before && get('#transaction-error').textContent?.includes('정수'), '표시 변경 뒤에도 소수 입력 검증 유지')
+  await close()
+  await nav('통계')
+  check(get('.stats-information div:first-child dd').textContent === '1,000건', '통계 지출 건수 쉼표')
+  await click('연간')
+  check(get(`.year-chart-month:nth-of-type(${now.getMonth() + 1})`).getAttribute('aria-label')?.includes('지출 1,011,997원'), '연간 차트 금액 공통 포맷')
+  await manage(); await click('식비, 카테고리 수정')
+  check(sheet().textContent?.includes('거래 1,000건') && button('카테고리 삭제', sheet()).matches(':disabled'), '카테고리 사용 경고의 건수 쉼표·삭제 제한 유지')
+  await close()
+  check(button('식비, 카테고리 수정').textContent?.includes('1,000건 사용'), '카테고리 목록 사용 건수 쉼표')
+
+  server.categories = [...fixture.categories, ...Array.from({ length: 998 }, (_, index): Category => ({
+    id: `category-${index}`, name: `분류 ${index}`, type: 'expense', symbol: 'other',
+  }))]
+  await nav('홈'); await nav('설정'); await click('서버 데이터 새로고침')
+  check(get('#settings-connection-note').textContent?.includes('카테고리 1,000개'), '설정 카테고리 개수 쉼표')
+  server = structuredClone(fixture)
+  server.transactions = [
+    { ...fixture.transactions[0], amount: 1000 },
+    { id: 'balance-income', date: today, type: 'income', amount: 1000, categoryId: 'salary', memo: '수입', },
+  ]
+  await click('서버 데이터 새로고침'); await nav('홈')
+  check(get('.home-balance strong').textContent === '0원', '거래가 있어도 차액 계산 결과 0은 부호 없는 0')
+  await nav('내역')
+  check(get('.summary-strip div:last-child dd').textContent === '0', '거래가 있는 내역의 차액 0')
+  await nav('통계')
+  check(get('.summary-strip div:last-child dd').textContent === '0', '거래가 있는 통계의 차액 0')
 }
 
 async function layouts() {
   for (const name of ['홈', '내역', '통계', '설정']) {
     await nav(name); invariantLayout()
+    check(!document.querySelector('.desktop-topbar') && !document.body.textContent?.includes('매일의 기록, 한눈에.'), '상단 공통 헤더 요소·문구 제거')
+    check(get('.page-header .eyebrow').textContent === 'MY LEDGER' && get('h1').textContent === name, '화면 내부 제목·MY LEDGER 유지')
+    if (innerWidth >= 1024) check(get('.main-content').getBoundingClientRect().top === 0, 'PC 본문은 헤더 잔여 높이 없이 최상단 시작')
   }
   await manage(); invariantLayout()
   await addCategory('반응형 이름')
@@ -335,10 +447,18 @@ async function layouts() {
 
 try {
   const { default: App } = await import('../../src/App')
+  readHold = true
   createRoot(get('#root')).render(<StrictMode><App /></StrictMode>)
-  await until(() => document.querySelector('.home-page'), '최초 조회')
+  await until(() => releaseRead, '최초 조회 대기')
   check(requests.length === 1, '최초 GET 한 번')
+  check(!document.querySelector('.home-page') && get('.ledger-status').textContent?.includes('불러오는 중'), '최초 로딩을 0원 화면과 구분')
+  readError = true; releaseRead!(); releaseRead = null
+  await until(() => get('.ledger-status').getAttribute('role') === 'alert', '최초 조회 실패')
+  check(!document.querySelector('.home-page') && !document.querySelector('.summary-strip'), '조회 실패를 정상 0원 화면과 구분')
+  await click('다시 시도')
+  await until(() => document.querySelector('.home-page'), '최초 재시도 성공')
   if (new URLSearchParams(location.search).get('full') === 'true') await fullCrud()
+  await displayUi()
   await layouts()
   parent.postMessage({ type: 'ledger-ui-qa', width: innerWidth, passed: true, checks: checks.length }, location.origin)
 } catch (error) {

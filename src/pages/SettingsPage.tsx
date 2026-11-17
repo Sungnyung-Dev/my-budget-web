@@ -3,6 +3,7 @@ import { PageHeader } from '../components/PageHeader'
 import { CategoriesPage } from './CategoriesPage'
 import type { LedgerData } from '../domain/types'
 import type { LedgerController } from '../state/useLedger'
+import { formatNumber } from '../domain/formatters'
 import './SettingsPage.css'
 
 export function SettingsPage({ data, ledger }: {
@@ -56,7 +57,7 @@ export function SettingsPage({ data, ledger }: {
               <div className="settings-row"><dt>앱 버전</dt><dd>0.0.0</dd></div>
             </dl>
             <p id="settings-connection-note" className="settings-note">
-              거래 {data.transactions.length}건 · 카테고리 {data.categories.length}개를 서버에서 불러왔습니다. 새로고침은 조회만 수행하며, 저장·삭제는 서버 확인 후 화면에 반영합니다.
+              거래 {formatNumber(data.transactions.length)}건 · 카테고리 {formatNumber(data.categories.length)}개를 서버에서 불러왔습니다. 새로고침은 조회만 수행하며, 저장·삭제는 서버 확인 후 화면에 반영합니다.
             </p>
           </section>
         </div>

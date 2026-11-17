@@ -3,7 +3,7 @@
   min-height: 100svh;
 }
 
-.sidebar, .desktop-topbar {
+.sidebar {
   display: none;
 }
 
@@ -638,23 +638,6 @@ h1 {
     min-height: 100svh;
   }
 
-  .desktop-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 77px;
-    padding: 0 44px;
-    border-bottom: 1px solid var(--border);
-    color: var(--secondary);
-    font-size: 11px;
-  }
-
-  .desktop-topbar span:first-child {
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 500;
-  }
-
   .main-content {
     width: 100%;
     padding: 45px 44px 38px;
@@ -731,10 +714,6 @@ h1 {
   }
 
   .page-footer {
-    padding-inline: 54px;
-  }
-
-  .desktop-topbar {
     padding-inline: 54px;
   }
 

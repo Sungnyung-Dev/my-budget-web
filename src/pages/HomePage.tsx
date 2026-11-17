@@ -3,7 +3,7 @@ import { PeriodNav } from '../components/PeriodNav'
 import { CategoryBars } from '../components/CategoryBars'
 import { TransactionList } from '../components/TransactionList'
 import { ledgerPeriod } from '../app/ledgerViews'
-import { formatMoney, signedMoney } from '../domain/formatters'
+import { formatMoney, formatNumber, signedMoney } from '../domain/formatters'
 import type { LedgerData, Transaction } from '../domain/types'
 import './HomePage.css'
 
@@ -36,7 +36,7 @@ export function HomePage({ data, month, onMonthChange, onHistory, onEdit }: {
             </div>
             <div>
               <dt className="home-small">거래 건수</dt>
-              <dd>{rows.length}건</dd>
+              <dd>{formatNumber(rows.length)}건</dd>
             </div>
           </dl>
         </section>

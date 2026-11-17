@@ -6,11 +6,11 @@ export function Summary({ variant = 'default', unavailable = false, totals }: {
   unavailable?: boolean
   totals?: Totals
 }) {
-  const value = !unavailable && variant === 'ledger' ? '0' : '—'
-  const values = totals ? [formatMoney(totals.income), formatMoney(totals.expense), signedMoney(totals.balance)] : [value, value, value]
+  const ready = !!totals && !unavailable
+  const values = ready ? [formatMoney(totals.income), formatMoney(totals.expense), signedMoney(totals.balance)] : ['—', '—', '—']
 
   return (
-    <dl className={`summary-strip ${variant === 'ledger' ? 'is-ledger' : ''}`} aria-label={unavailable ? '금액 데이터 미연결' : undefined}>
+    <dl className={`summary-strip ${variant === 'ledger' ? 'is-ledger' : ''}`} aria-label={!ready ? '금액 데이터 미연결' : undefined}>
       {['수입', '지출', '수입 − 지출'].map((label, index) => (
         <div key={label}>
           <dt>{label}</dt>

@@ -44,7 +44,6 @@ export function AppLayout({ page, onNavigate, children }: {
       </aside>
 
       <div className="main-shell">
-        <div className="desktop-topbar"><span>나의 가계부</span><span>매일의 기록, 한눈에.</span></div>
         <main id="main-content" tabIndex={-1} className="main-content">{children}</main>
         <footer className="page-footer"><span>나의 가계부</span><span>나를 위한 작은 기록장</span></footer>
       </div>

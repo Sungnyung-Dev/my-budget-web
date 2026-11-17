@@ -3,6 +3,7 @@ import { CategoryEditor, type CategoryEditorTarget } from '../components/Categor
 import { PageHeader } from '../components/PageHeader'
 import { ledgerCategories } from '../app/ledgerViews'
 import type { LedgerController } from '../state/useLedger'
+import { formatNumber } from '../domain/formatters'
 
 export function CategoriesPage({ onBack, ledger }: {
   onBack: () => void
@@ -31,7 +32,7 @@ export function CategoriesPage({ onBack, ledger }: {
                   {items.map((category) => (
                     <li key={category.id}>
                       <button type="button" className="categories-row" aria-label={`${category.name}, 카테고리 수정`} onClick={() => setEditor({ mode: 'edit', type, category })}>
-                        <span><span className="categories-name">{category.name}</span><span className="categories-count">{category.usageCount}건 사용</span></span>
+                        <span><span className="categories-name">{category.name}</span><span className="categories-count">{formatNumber(category.usageCount)}건 사용</span></span>
                         <span className="settings-arrow" aria-hidden="true">›</span>
                       </button>
                     </li>

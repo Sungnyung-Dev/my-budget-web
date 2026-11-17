@@ -5,7 +5,7 @@ import { PeriodNav } from '../components/PeriodNav'
 import { Summary } from '../components/Summary'
 import { YearChart } from '../components/YearChart'
 import { ledgerPeriod, ledgerYear } from '../app/ledgerViews'
-import { formatMoney } from '../domain/formatters'
+import { formatMoney, formatNumber } from '../domain/formatters'
 import type { LedgerData } from '../domain/types'
 import './StatsPage.css'
 
@@ -13,8 +13,8 @@ export function StatsPage({ data, month, onMonthChange }: { data: LedgerData; mo
   const [mode, setMode] = useState<'month' | 'year'>('month')
   const { totals, spending, metrics, activeMonths, monthlyAverage } = ledgerPeriod(data, month, mode)
   const info = mode === 'month'
-    ? [['지출 건수', `${metrics.count}건`], ['지출한 날짜', `${metrics.days}일`], ['지출일 평균', `${formatMoney(metrics.dailyAverage)}원`]]
-    : [['기록된 월', `${activeMonths}개월`], ['기록된 월 평균 지출', `${formatMoney(monthlyAverage)}원`]]
+    ? [['지출 건수', `${formatNumber(metrics.count)}건`], ['지출한 날짜', `${formatNumber(metrics.days)}일`], ['지출일 평균', `${formatMoney(metrics.dailyAverage)}원`]]
+    : [['기록된 월', `${formatNumber(activeMonths)}개월`], ['기록된 월 평균 지출', `${formatMoney(monthlyAverage)}원`]]
 
   return (
     <article className="ledger-page stats-page">

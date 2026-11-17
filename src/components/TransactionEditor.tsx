@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BottomSheet } from './BottomSheet'
 import type { Transaction, TransactionType } from '../domain/types'
 import { parseAmount } from '../domain/ledger'
+import { formatMoney } from '../domain/formatters'
 import type { LedgerController } from '../state/useLedger'
 import { useWriteAction } from '../state/useWriteAction'
 import { WriteStatus } from './WriteStatus'
@@ -19,7 +20,7 @@ export function TransactionEditor({ date, transaction, ledger, onClose }: {
   const blocked = busy || state.needsRefresh
   const { failure, run } = useWriteAction(onClose)
   const [type, setType] = useState<TransactionType>(transaction?.type ?? 'expense')
-  const [amount, setAmount] = useState(transaction ? transaction.amount.toLocaleString('ko-KR') : '')
+  const [amount, setAmount] = useState(transaction ? formatMoney(transaction.amount) : '')
   const [categoryId, setCategoryId] = useState(transaction?.categoryId ?? categories.find((category) => category.type === 'expense')?.id ?? '')
   const [memo, setMemo] = useState(transaction?.memo ?? '')
   const [amountTouched, setAmountTouched] = useState(false)
@@ -94,7 +95,7 @@ export function TransactionEditor({ date, transaction, ledger, onClose }: {
           onChange={(event) => setAmount(event.target.value)}
           onBlur={() => {
             setAmountTouched(true)
-            if (!amountError) setAmount(amountValue.toLocaleString('ko-KR'))
+            if (!amountError) setAmount(formatMoney(amountValue))
           }}
         />
       </div>

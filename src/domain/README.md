@@ -9,7 +9,7 @@
 | `ledger.ts` | `MAX_AMOUNT`, `parseAmount`, 안전한 정수 합계 `sumAmounts` |
 | `selectors.ts` | `getTotals`, `forMonth`, `forYear`, `forDay`, `recentTransactions`, `categorySpending`, `spendingMetrics`, `yearlyMonths` |
 | `validateLedger.ts` | 거래·카테고리 단건/목록 및 전체 Ledger 검증, 입력 검증, 사용 중 카테고리 삭제 차단 검증 |
-| `formatters.ts` | 화면 표시 전용 `formatMoney`, `signedMoney`, `dateLabel` |
+| `formatters.ts` | 화면 표시 전용 `formatNumber`, `formatMoney`, `signedMoney`, `dateLabel` |
 
 ## 데이터 계약과 사용 순서
 
@@ -35,3 +35,7 @@
 추가 라이브러리 없이 Node의 기본 테스트 러너를 사용합니다. `npm test`는 API 테스트와 함께 날짜·집계·검증 테스트 104개를 실행하며 테스트와 도메인은 `npm run typecheck`에 포함됩니다. 테스트용 거래와 카테고리는 `tests/` 안에만 있습니다. 도메인 테스트는 UTC와 America/Los_Angeles에서도 동일하게 통과했고, Node 24의 도메인 커버리지는 실행 코드의 줄·분기·함수 모두 100%입니다.
 
 현재 화면은 `src/app/ledgerViews.ts`와 기존 selectors·포맷 함수를 통해 검증된 서버 Ledger를 사용합니다. 기존 `src/lib/dates.ts`는 화면용 `Date` 인터페이스를 유지합니다. 정상 응답의 빈 배열은 계산값 0으로 표시하며, 보류 중인 쉼표 표시 통일·빈 값의 전면 수정·FAB 배경·PC 헤더 요청은 별도로 남겨 둡니다.
+
+## 화면 표시
+
+`formatNumber`는 금액과 건수의 천 단위 쉼표를 공유합니다. `formatMoney`는 기존과 같이 절댓값 금액을 반환하고 `signedMoney`는 양수 `+`, 음수 `−`를 붙입니다. 0과 -0은 모두 부호 없는 `0`입니다. 표시 함수는 데이터·API 금액·입력 검증을 변경하지 않습니다. 날짜의 연도·월·일에는 건수용 쉼표를 적용하지 않습니다. 준비되지 않은 데이터는 호출 측에서 로딩·오류·미연결로 구분합니다. 표시 계약 8개를 `tests/formatters.test.ts`에서 검증합니다.

@@ -99,7 +99,7 @@
   font-size: 11px;
 }
 
-/* 탭 높이에 Safe Area를 포함합니다. 스크롤 영역은 FAB 위에서 끝납니다. */
+/* FAB 아래로 스크롤할 수 있게 여유 공간은 본문 내부 padding으로 확보합니다. */
 .ledger-fab-position {
   position: fixed;
   z-index: 9;
@@ -112,6 +112,7 @@
   margin-inline: auto;
   padding-right: max(22px, env(safe-area-inset-right, 0px));
   padding-left: max(22px, env(safe-area-inset-left, 0px));
+  background: transparent;
   pointer-events: none;
 }
 

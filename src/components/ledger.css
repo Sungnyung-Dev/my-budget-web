@@ -20,13 +20,12 @@
   width: 100%;
   min-height: 0;
   max-width: 580px;
-  margin-bottom: var(--ledger-scroll-clearance, 0px);
   overflow-y: auto;
   overscroll-behavior-y: contain;
   scrollbar-width: none;
   padding: calc(16px + env(safe-area-inset-top, 0px))
     max(22px, env(safe-area-inset-right, 0px))
-    24px
+    calc(24px + var(--ledger-scroll-clearance, 0px))
     max(22px, env(safe-area-inset-left, 0px));
 }
 
@@ -278,7 +277,7 @@
 @media (min-width: 1024px) {
   .ledger-layout .main-content {
     max-width: 1000px;
-    padding: 32px 44px 24px;
+    padding: 32px 44px calc(24px + var(--ledger-scroll-clearance, 0px));
   }
 }
 
