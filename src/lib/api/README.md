@@ -5,7 +5,7 @@
 ## 계약
 
 - `GET /api/v1/ledger`, 요청 본문·쿼리 파라미터 없음. 정상 응답은 HTTP 200의 `{ version: 1, categories: Category[], transactions: Transaction[] }`이며 envelope·필터·페이지네이션이 없습니다.
-- 서버는 전체 카테고리와 거래를 동일 시점의 스냅샷으로 반환합니다. 카테고리는 유형 → 이름 → ID 오름차순, 거래는 날짜 내림차순 → ID 오름차순입니다. 클라이언트는 응답 순서·문자열 ID·`YYYY-MM-DD` 날짜·숫자 금액을 그대로 유지합니다.
+- 서버는 전체 카테고리와 거래를 동일 시점의 스냅샷으로 반환합니다. 카테고리 DTO에는 음수가 아닌 안전한 정수 `sortOrder`가 필요하며, 관리 목록과 거래 선택지는 유형별 `sortOrder` 오름차순으로 표시합니다. 통계의 카테고리별 지출은 기존 금액 내림차순을 유지합니다. 문자열 ID·`YYYY-MM-DD` 날짜·숫자 금액은 그대로 유지합니다.
 - 기존 `validateLedger(unknown)`로 버전·필드·날짜·정수 금액·전체 합계·중복·카테고리 참조 및 유형을 검사합니다. 정상 빈 거래 배열 및 카테고리까지 모두 빈 Ledger를 허용합니다. 실패·204·빈 본문·잘못된 JSON을 빈 배열로 대체하지 않습니다.
 - 백엔드 오류 형식은 `{ error: { code, message } }`입니다. 클라이언트는 HTTP 상태만 보존하고 오류 본문을 읽거나 노출하지 않습니다. 네트워크/검증기의 원문 오류와 실제 Ledger 내용도 기록하지 않습니다.
 
@@ -56,10 +56,13 @@ GET과 거래·카테고리 CRUD 모두 `credentials: 'same-origin'`을 사용�
 | `createCategory(input, client?, options?)` | POST `/api/v1/categories` | `name`, `type`, `symbol` | 201, 서버 ID가 있는 `Category` |
 | `updateCategory(id, input, client?, options?)` | PATCH `/api/v1/categories/:id` | `name`만 | 200, 최종 `Category` |
 | `deleteCategory(id, client?, options?)` | DELETE `/api/v1/categories/:id` | 문자열 ID | 204, `void` |
+| `updateCategoryOrder(input, client?, options?)` | PUT `/api/v1/categories/order` | `type`, 해당 유형 전체 ID를 원하는 순서로 담은 `categoryIds` | 200, 정렬된 `Category[]` |
+
+카테고리 생성 입력은 `name`, `type`, `symbol`만 사용하며 `sortOrder`를 요구하거나 전송하지 않습니다. 정렬은 응답의 전체 ID·유형·배열 순서·`sortOrder`를 검증하며 공통 인증·CSRF·타임아웃·취소 처리를 재사용합니다. 화면에서는 `ledger.updateCategoryOrder()`로 호출해 기존 쓰기 잠금과 실패 후 재조회 정책을 적용합니다.
 
 허용하지 않은 필드·생성 ID·빈 PATCH를 거부하고 이름·메모를 trim합니다. 날짜·정수 금액·열거 값·길이·문자열 ID(1–191자)를 전송 전에 검사합니다. ID는 단일 URL 세그먼트로 인코딩하며 `.`·`..`와 인코딩 불가 ID는 거부합니다. 생성·수정 응답은 기존 도메인 단건 검증기를 사용하고 수정 응답 ID가 대상과 다르면 `INVALID_RESPONSE`입니다. 생성 201·수정 200·삭제 204 외 성공 상태도 최종 처리 결과로 간주하지 않습니다. 삭제 204에서는 JSON 파싱을 하지 않습니다.
 
-저수준 API 함수는 실패 시 `ApiError`를 던집니다. 화면에서는 [공통 상태 계층의 같은 이름의 6개 작업](../../state/README.md)을 사용해야 전체 Ledger 검증·중복 차단·불확실 결과 처리가 함께 적용됩니다. 전송된 쓰기의 취소는 서버 롤백을 보장하지 않으므로, 상태 계층은 이를 재조회가 필요한 결과로 분류합니다. 자동 쓰기 재시도는 없습니다.
+저수준 API 함수는 실패 시 `ApiError`를 던집니다. 화면에서는 [공통 상태 계층의 같은 이름의 작업](../../state/README.md)을 사용해야 전체 Ledger 검증·중복 차단·불확실 결과 처리가 함께 적용됩니다. 전송된 쓰기의 취소는 서버 롤백을 보장하지 않으므로, 상태 계층은 이를 재조회가 필요한 결과로 분류합니다. 자동 쓰기 재시도는 없습니다.
 
 ## 개발과 배포 경로
 

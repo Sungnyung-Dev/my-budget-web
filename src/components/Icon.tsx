@@ -11,6 +11,7 @@ const paths = {
   arrowRight: <path d="m10 6 6 6-6 6" />,
   arrowDown: <path d="M12 4v16m-6-6 6 6 6-6" />,
   arrowUp: <path d="M12 20V4m-6 6 6-6 6 6" />,
+  grip: <><path d="M8 5h.01M16 5h.01M8 12h.01M16 12h.01M8 19h.01M16 19h.01" strokeWidth="3" /></>,
   receipt: <><path d="M6 3h12v18l-3-2-3 2-3-2-3 2Zm3 5h6m-6 4h6" /></>,
   circle: <><circle cx="12" cy="12" r="9" /><path d="M12 3v9l6 6" /></>,
   share: <><path d="M12 15V3m-4 4 4-4 4 4M7 10H5v11h14V10h-2" /></>,

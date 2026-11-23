@@ -5,7 +5,7 @@ import type { ApiClient, ApiErrorCode } from '../lib/api/client.ts'
 import { getLedger } from '../lib/api/ledgerApi.ts'
 import * as transactions from '../lib/api/transactionApi.ts'
 import * as categories from '../lib/api/categoryApi.ts'
-import { categoryCreateInput, categoryUpdateInput, invalidRequest, requestId, transactionCreateInput, transactionUpdateInput } from '../lib/api/validation.ts'
+import { categoryCreateInput, categoryOrderInput, categoryUpdateInput, invalidRequest, requestId, transactionCreateInput, transactionUpdateInput } from '../lib/api/validation.ts'
 
 type ReadState =
   | { status: 'loading'; data: null; error: null }
@@ -230,6 +230,26 @@ export function createLedgerStore(load?: LedgerLoader, client: ApiClient = apiCl
         return {
           send: (signal) => categories.deleteCategory(id, client, { signal }),
           apply: () => ({ ...data, categories: data.categories.filter((category) => category.id !== id) }),
+        }
+      })
+    },
+    updateCategoryOrder(input: categories.UpdateCategoryOrderInput): Promise<WriteResult<Category[]>> {
+      return mutate((data) => {
+        const body = categoryOrderInput(input)
+        const current = data.categories.filter((category) => category.type === body.type)
+        const ids = new Set(current.map((category) => category.id))
+        if (body.categoryIds.length !== current.length || body.categoryIds.some((id) => !ids.has(id))) {
+          return invalidRequest('해당 유형의 전체 카테고리를 순서대로 지정해 주세요.')
+        }
+        return {
+          send: (signal) => categories.updateCategoryOrder(body, client, { signal }),
+          apply: (ordered) => {
+            if (ordered.some((category) => category.symbol !== current.find((item) => item.id === category.id)?.symbol)) {
+              throw new Error('Unexpected category identity')
+            }
+            let index = 0
+            return { ...data, categories: data.categories.map((category) => category.type === body.type ? ordered[index++] : category) }
+          },
         }
       })
     },

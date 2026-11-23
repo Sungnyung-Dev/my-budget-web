@@ -1,5 +1,5 @@
 import { dateKey } from '../domain/dates.ts'
-import { categorySpending, forMonth, forYear, getTotals, recentTransactions, spendingMetrics, yearlyMonths } from '../domain/selectors.ts'
+import { categorySpending, forMonth, forYear, getTotals, orderedCategories, recentTransactions, spendingMetrics, yearlyMonths } from '../domain/selectors.ts'
 import type { LedgerData } from '../domain/types.ts'
 
 export function ledgerPeriod(data: LedgerData, date: Date, period: 'month' | 'year' = 'month') {
@@ -31,5 +31,5 @@ export function ledgerYear(data: LedgerData, year: number) {
 export function ledgerCategories(data: LedgerData) {
   const counts = new Map<string, number>()
   data.transactions.forEach((row) => counts.set(row.categoryId, (counts.get(row.categoryId) ?? 0) + 1))
-  return data.categories.map((category) => ({ ...category, usageCount: counts.get(category.id) ?? 0 }))
+  return orderedCategories(data.categories).map((category) => ({ ...category, usageCount: counts.get(category.id) ?? 0 }))
 }

@@ -9,6 +9,7 @@ export function useLedger() {
     state, reload: store.reload,
     createTransaction: store.createTransaction, updateTransaction: store.updateTransaction, deleteTransaction: store.deleteTransaction,
     createCategory: store.createCategory, updateCategory: store.updateCategory, deleteCategory: store.deleteCategory,
+    updateCategoryOrder: store.updateCategoryOrder,
   }
 }
 

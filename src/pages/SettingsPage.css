@@ -98,9 +98,61 @@
   align-items: center;
   gap: 10px;
   width: 100%;
+  min-width: 0;
+  min-height: 54px;
   padding: 13px 1px;
-  border-bottom: 1px solid #f0f0f0;
   text-align: left;
+}
+
+.categories-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.categories-item.is-dragging { opacity: .3; }
+
+.categories-drag-handle {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  min-height: 48px;
+  color: var(--ledger-muted);
+  cursor: grab;
+  /* 이 핸들에서만 스크롤을 막고 나머지 행은 기본 화면 스크롤을 유지합니다. */
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.categories-drag-handle:active { cursor: grabbing; }
+
+.categories-drag-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 54px;
+  padding: 12px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 6px 18px #0002;
+}
+
+.categories-move-buttons,
+.categories-move-help { display: none; }
+
+.categories-move-buttons { flex-shrink: 0; }
+
+.categories-move-buttons button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 44px;
+  color: var(--ledger-muted);
 }
 
 .categories-name {
@@ -117,6 +169,12 @@
 }
 
 @media (min-width: 1024px) {
+  .categories-drag-handle,
+  .categories-drag-help { display: none; }
+
+  .categories-move-buttons { display: flex; }
+  .categories-move-help { display: block; }
+
   .settings-workspace,
   .categories-workspace {
     display: grid;

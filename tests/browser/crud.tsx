@@ -12,8 +12,8 @@ const today = dateKey(now.getFullYear(), now.getMonth() + 1, now.getDate())
 const fixture: LedgerData = {
   version: 1,
   categories: [
-    { id: 'food', type: 'expense', name: '식비', symbol: 'food' },
-    { id: 'salary', type: 'income', name: '급여', symbol: 'income' },
+    { id: 'food', type: 'expense', name: '식비', symbol: 'food', sortOrder: 0 },
+    { id: 'salary', type: 'income', name: '급여', symbol: 'income', sortOrder: 0 },
   ],
   transactions: [
     { id: 'existing', date: today, type: 'expense', amount: 100, categoryId: 'food', memo: '기존 거래' },
@@ -49,12 +49,21 @@ globalThis.fetch = async (input, options) => {
     }
     return response()
   }
-  if (!['POST', 'PATCH', 'DELETE'].includes(method) || path.endsWith('/ledger')) throw new Error('Unexpected mock method')
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) || path.endsWith('/ledger')) throw new Error('Unexpected mock method')
   const plan = writePlan
   writePlan = null
   if (plan === 'reject') return json({ internal: 'PRIVATE_SERVER_DETAIL' }, 409)
   if (plan === 'serverError') return json({ internal: 'PRIVATE_SERVER_DETAIL' }, 500)
   function apply() {
+    if (method === 'PUT' && path === '/api/v1/categories/order') {
+      const ids = body.categoryIds as string[]
+      const current = server.categories.filter((category) => category.type === body.type)
+      if (ids.length !== current.length || new Set(ids).size !== ids.length || ids.some((id) => !current.some((category) => category.id === id))) return json({}, 400)
+      const ordered = ids.map((id, sortOrder) => ({ ...current.find((category) => category.id === id)!, sortOrder }))
+      let index = 0
+      server.categories = server.categories.map((category) => category.type === body.type ? ordered[index++] : category)
+      return json(ordered)
+    }
     const transaction = path.startsWith('/api/v1/transactions')
     const rows = transaction ? server.transactions : server.categories
     const id = decodeURIComponent(path.split('/')[4] ?? '')
@@ -62,7 +71,10 @@ globalThis.fetch = async (input, options) => {
       const value: Record<string, unknown> = { ...body, id: `server-${++sequence}` }
       if (transaction && finalTransaction) { value.amount = 1250; value.memo = '서버 점심'; finalTransaction = false }
       if (transaction) server.transactions.push(value as unknown as Transaction)
-      else server.categories.push(value as unknown as Category)
+      else {
+        value.sortOrder = Math.max(-1, ...server.categories.filter((category) => category.type === body.type).map((category) => category.sortOrder)) + 1
+        server.categories.push(value as unknown as Category)
+      }
       return json(value, 201)
     }
     const index = rows.findIndex((row) => row.id === id)
@@ -399,7 +411,7 @@ async function displayUi() {
   check(button('식비, 카테고리 수정').textContent?.includes('1,000건 사용'), '카테고리 목록 사용 건수 쉼표')
 
   server.categories = [...fixture.categories, ...Array.from({ length: 998 }, (_, index): Category => ({
-    id: `category-${index}`, name: `분류 ${index}`, type: 'expense', symbol: 'other',
+    id: `category-${index}`, name: `분류 ${index}`, type: 'expense', symbol: 'other', sortOrder: index + 1,
   }))]
   await nav('홈'); await nav('설정'); await click('서버 데이터 새로고침')
   check(get('#settings-connection-note').textContent?.includes('카테고리 1,000개'), '설정 카테고리 개수 쉼표')
@@ -445,6 +457,113 @@ async function layouts() {
   await nav('홈'); invariantLayout()
 }
 
+async function categoryOrdering() {
+  server = structuredClone(fixture)
+  server.categories.push(
+    { id: 'cafe', type: 'expense', name: '카페', symbol: 'coffee', sortOrder: 1 },
+    { id: 'transport', type: 'expense', name: '교통', symbol: 'transport', sortOrder: 2 },
+    { id: 'bonus', type: 'income', name: '상여', symbol: 'income', sortOrder: 1 },
+  )
+  await nav('홈'); await nav('설정'); await click('서버 데이터 새로고침'); await click('카테고리 관리')
+  const list = (type = 'expense') => get(`#categories-${type}-heading`).closest('section')!
+  const names = (type = 'expense') => [...list(type).querySelectorAll('.categories-name')].map((node) => node.textContent).join(',')
+  const incomeBefore = names('income')
+  const mobile = innerWidth < 1024
+  check(getComputedStyle(get('.categories-drag-handle')).display === (mobile ? 'grid' : 'none'), '모바일 핸들과 PC 버튼 분기')
+  check(getComputedStyle(get('.categories-drag-handle')).touchAction === 'none', '핸들에서만 터치 기본 동작 차단')
+  check(getComputedStyle(get('.categories-row')).touchAction !== 'none', '행 본문에서 기본 스크롤 허용')
+  let handle!: HTMLButtonElement
+  let origin!: DOMRect
+  function touch(type: string, y: number) {
+    const point = new Touch({ identifier: 1, target: handle, clientX: origin.x + origin.width / 2, clientY: y,
+      pageX: origin.x + origin.width / 2 + scrollX, pageY: y + scrollY })
+    const event = new TouchEvent(type, { bubbles: true, cancelable: true,
+      touches: type === 'touchend' || type === 'touchcancel' ? [] : [point],
+      targetTouches: type === 'touchend' || type === 'touchcancel' ? [] : [point], changedTouches: [point] })
+    handle.dispatchEvent(event)
+    return event
+  }
+  async function start(name: string) {
+    handle = button(`${name} 순서 변경 핸들`)
+    handle.scrollIntoView({ block: 'center' })
+    origin = handle.getBoundingClientRect()
+    touch('touchstart', origin.y + origin.height / 2)
+    await pause(350)
+  }
+  async function moveLastToFirst() {
+    if (!mobile) { await click('교통 위로 이동'); return }
+    await start('교통')
+    const y = button('식비 순서 변경 핸들').getBoundingClientRect().y + origin.height / 2
+    const event = touch('touchmove', y)
+    check(event.defaultPrevented, '활성 드래그 중 터치 스크롤 차단')
+    await pause(80)
+    touch('touchend', y)
+    await pause(80)
+  }
+  if (mobile) {
+    const before = writes()
+    handle = button('교통 순서 변경 핸들'); origin = handle.getBoundingClientRect()
+    touch('touchstart', origin.y + 20); touch('touchend', origin.y + 20); await pause(350)
+    check(writes() === before && !document.querySelector('.is-dragging'), '짧은 터치로 이동·저장하지 않음')
+    touch('touchstart', origin.y + 20); touch('touchmove', origin.y + 35); await pause(350); touch('touchend', origin.y + 35)
+    check(writes() === before && !document.querySelector('.is-dragging'), '길게 누르기 전 이동하면 드래그 취소')
+    await start('교통'); touch('touchend', origin.y + 20); await pause()
+    check(writes() === before, '같은 위치에 놓으면 저장하지 않음')
+    await start('교통'); touch('touchcancel', origin.y + 20); await pause()
+    check(writes() === before && !document.querySelector('.is-dragging'), '터치 취소 시 저장하지 않음')
+  } else {
+    check(button('식비 위로 이동').disabled && button('교통 아래로 이동').disabled, 'PC 맨 위·아래 경계 버튼 비활성화')
+  }
+  writePlan = 'hold'
+  const before = writes()
+  await moveLastToFirst()
+  check(writes() === before + 1, '정렬 종료 시 PUT 한 번')
+  check(names() === '식비,카페,교통', '정렬 저장 응답 전 기존 순서 유지')
+  check([...list().querySelectorAll('.categories-move-buttons button,.categories-drag-handle')].every((node) => node.matches(':disabled')), '정렬 저장 중 재정렬 잠금')
+  release!(); release = null
+  await until(() => names().startsWith(mobile ? '교통,' : '식비,교통,'), '정렬 성공 순서 반영')
+  const saved = names()
+  check(names('income') === incomeBefore, '지출 정렬 후 수입 순서 유지')
+  const request = requests.filter((request) => request.method === 'PUT').at(-1)!
+  check(request.path === '/api/v1/categories/order' && (request.body.categoryIds as string[]).length === 3, '해당 유형 전체 ID를 정렬 API로 전송')
+  if (!mobile) await click('상여 위로 이동')
+  else {
+    await start('상여')
+    const y = button('급여 순서 변경 핸들').getBoundingClientRect().y + origin.height / 2
+    touch('touchmove', y); await pause(80); touch('touchend', y); await pause(80)
+  }
+  check(names('income') === '상여,급여' && names() === saved, '수입 정렬은 지출 순서 유지')
+  await addTransaction('정렬 선택 검증')
+  check([...sheet().querySelectorAll('.transaction-chip')].map((node) => node.textContent).join(',') === saved, '거래 추가 선택 순서 반영')
+  await click('수입', sheet())
+  check(get('.transaction-chips', sheet()).textContent === '상여급여', '수입 거래 선택 순서 반영')
+  await close(); await openTransaction('기존 거래')
+  check([...sheet().querySelectorAll('.transaction-chip')].map((node) => node.textContent).join(',') === saved, '거래 수정 선택 순서 반영')
+  check(button('식비', sheet()).getAttribute('aria-pressed') === 'true', '정렬 후 기존 거래 선택 카테고리 유지')
+  await close(); await manage()
+  writePlan = 'reject'
+  await moveLastToFirst()
+  check(names() === saved && !!document.querySelector('.categories-page [role="alert"]'), '정렬 저장 거절 시 기존 순서·오류 표시')
+  writePlan = 'networkCommitted'
+  // 같은 위치 드롭을 피하기 위해 맨 아래 카테고리를 위로 이동합니다.
+  if (!mobile) await click('카페 위로 이동')
+  else {
+    await start('식비')
+    const y = button('교통 순서 변경 핸들').getBoundingClientRect().y + origin.height / 2
+    touch('touchmove', y); await pause(80); touch('touchend', y); await pause(80)
+  }
+  check(names() === saved && !!document.querySelector('.ledger-status[role="alert"]'), '정렬 결과 불확실 시 기존 순서와 재조회 안내')
+  check(button('지출 카테고리 추가').disabled, '불확실한 정렬 이후 추가 쓰기 차단')
+  await click('서버 데이터 다시 조회')
+  check(!document.querySelector('.ledger-status[role="alert"]'), '재조회로 서버 순서 확인·쓰기 차단 해제')
+  await click('설정으로 돌아가기'); await click('서버 데이터 새로고침'); await click('카테고리 관리')
+  const persisted = names()
+  check(persisted === (mobile ? '식비,교통,카페' : '식비,카페,교통'), '재조회 후 저장된 순서 유지')
+  invariantLayout()
+  server = structuredClone(fixture)
+  await nav('홈'); await nav('설정'); await click('서버 데이터 새로고침'); await nav('홈')
+}
+
 try {
   const { LedgerApp: App } = await import('../../src/App')
   readHold = true
@@ -458,6 +577,7 @@ try {
   await click('다시 시도')
   await until(() => document.querySelector('.home-page'), '최초 재시도 성공')
   if (new URLSearchParams(location.search).get('full') === 'true') await fullCrud()
+  await categoryOrdering()
   await displayUi()
   await layouts()
   parent.postMessage({ type: 'ledger-ui-qa', width: innerWidth, passed: true, checks: checks.length }, location.origin)

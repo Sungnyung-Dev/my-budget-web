@@ -52,14 +52,18 @@ const operations: { label: string; payload?: object; status: number; run: (store
     next: (data) => ({ ...data, transactions: data.transactions.map((row) => row.id === 'a' ? { ...row, amount: 800, memo: '서버 최종 메모' } : row) }) },
   { label: '거래 삭제', status: 204, run: (store) => store.deleteTransaction('a'),
     next: (data) => ({ ...data, transactions: data.transactions.filter((row) => row.id !== 'a') }) },
-  { label: '카테고리 생성', status: 201, payload: { ...categoryInput, name: '운동', id: 'new-category' },
+  { label: '카테고리 생성', status: 201, payload: { ...categoryInput, name: '운동', id: 'new-category', sortOrder: 3 },
     run: (store) => store.createCategory(categoryInput),
-    next: (data) => ({ ...data, categories: [...data.categories, { ...categoryInput, name: '운동', id: 'new-category' }] }) },
+    next: (data) => ({ ...data, categories: [...data.categories, { ...categoryInput, name: '운동', id: 'new-category', sortOrder: 3 }] }) },
   { label: '카테고리 수정', status: 200, payload: { ...ledger.categories[0], name: '서버 이름' },
     run: (store) => store.updateCategory('food', { name: ' 요청 이름 ' }),
     next: (data) => ({ ...data, categories: data.categories.map((category) => category.id === 'food' ? { ...category, name: '서버 이름' } : category) }) },
   { label: '카테고리 삭제', status: 204, run: (store) => store.deleteCategory('transport'),
     next: (data) => ({ ...data, categories: data.categories.filter((category) => category.id !== 'transport') }) },
+  { label: '카테고리 정렬', status: 200,
+    payload: [ledger.categories[2], ledger.categories[0], ledger.categories[1]].map((category, sortOrder) => ({ ...category, sortOrder })),
+    run: (store) => store.updateCategoryOrder({ type: 'expense', categoryIds: ['transport', 'food', 'cafe'] }),
+    next: (data) => ({ ...data, categories: [data.categories[2], data.categories[0], data.categories[1]].map((category, sortOrder) => ({ ...category, sortOrder })).concat(data.categories[3]) }) },
 ]
 
 for (const operation of operations) {

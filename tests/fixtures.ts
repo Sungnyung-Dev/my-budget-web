@@ -5,10 +5,10 @@ export function createLedger(): LedgerData {
   return {
     version: 1,
     categories: [
-      { id: 'food', name: '식비', type: 'expense', symbol: 'food' },
-      { id: 'cafe', name: 'Cafe', type: 'expense', symbol: 'coffee' },
-      { id: 'transport', name: '교통', type: 'expense', symbol: 'transport' },
-      { id: 'salary', name: '급여', type: 'income', symbol: 'income' },
+      { id: 'food', name: '식비', type: 'expense', symbol: 'food', sortOrder: 0 },
+      { id: 'cafe', name: 'Cafe', type: 'expense', symbol: 'coffee', sortOrder: 1 },
+      { id: 'transport', name: '교통', type: 'expense', symbol: 'transport', sortOrder: 2 },
+      { id: 'salary', name: '급여', type: 'income', symbol: 'income', sortOrder: 0 },
     ],
     transactions: [
       { id: 'a', date: '2026-01-01', type: 'expense', amount: 101, categoryId: 'food', memo: '' },

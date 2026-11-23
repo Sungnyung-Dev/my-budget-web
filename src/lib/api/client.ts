@@ -63,7 +63,7 @@ async function readJson<T>(response: Response, validate: (value: unknown) => T, 
 }
 
 export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl, getCsrfToken: csrf = () => null, onUnauthorized }: ApiClientOptions = {}) {
-  async function send<T>(method: 'GET' | 'POST' | 'PATCH' | 'DELETE', path: string,
+  async function send<T>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string,
     read: (response: Response, signal: AbortSignal) => Promise<T>, body?: object, { signal }: ApiRequestOptions = {}): Promise<T> {
     const url = requestPath(path)
     if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 2_147_483_647) {
@@ -137,6 +137,9 @@ export function createApiClient({ timeoutMs = DEFAULT_TIMEOUT_MS, fetchImpl, get
     },
     patch<T>(path: string, body: object, validate: (value: unknown) => T, options?: ApiRequestOptions): Promise<T> {
       return send('PATCH', path, (response, signal) => readJson(response, validate, signal, 200), body, options)
+    },
+    put<T>(path: string, body: object, validate: (value: unknown) => T, options?: ApiRequestOptions): Promise<T> {
+      return send('PUT', path, (response, signal) => readJson(response, validate, signal, 200), body, options)
     },
     delete(path: string, options?: ApiRequestOptions): Promise<void> {
       return send('DELETE', path, async (response) => {

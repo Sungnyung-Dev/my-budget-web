@@ -7,6 +7,7 @@ export interface Category {
   name: string
   type: TransactionType
   symbol: CategorySymbol
+  sortOrder: number
 }
 
 export interface Transaction {

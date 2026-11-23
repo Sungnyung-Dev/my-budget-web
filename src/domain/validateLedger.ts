@@ -19,7 +19,8 @@ export function validateCategory(value: unknown): Category {
   const category = value as Category
   if (!isRecord(value) || typeof category.id !== 'string' || !category.id
     || !isTransactionType(category.type) || typeof category.name !== 'string'
-    || !category.name.trim() || category.name.length > 20 || !isCategorySymbol(category.symbol)) {
+    || !category.name.trim() || category.name.length > 20 || !isCategorySymbol(category.symbol)
+    || !Number.isSafeInteger(category.sortOrder) || category.sortOrder < 0) {
     throw new Error('저장된 카테고리를 확인할 수 없습니다.')
   }
   return category

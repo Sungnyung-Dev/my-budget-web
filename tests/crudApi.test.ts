@@ -23,13 +23,16 @@ const operations: {
   { label: '거래 삭제', method: 'DELETE', path: '/api/v1/transactions/a', status: 204,
     run: (client, options) => transactions.deleteTransaction('a', client, options) },
   { label: '카테고리 생성', method: 'POST', path: '/api/v1/categories', status: 201,
-    body: { ...categoryInput, name: '운동' }, payload: { ...categoryInput, name: '운동', id: 'server-category' },
+    body: { ...categoryInput, name: '운동' }, payload: { ...categoryInput, name: '운동', id: 'server-category', sortOrder: 3 },
     run: (client, options) => categories.createCategory(categoryInput, client, options) },
   { label: '카테고리 수정', method: 'PATCH', path: '/api/v1/categories/food', status: 200,
     body: { name: '식사' }, payload: { ...category, name: '식사' },
     run: (client, options) => categories.updateCategory('food', { name: ' 식사 ' }, client, options) },
   { label: '카테고리 삭제', method: 'DELETE', path: '/api/v1/categories/food', status: 204,
     run: (client, options) => categories.deleteCategory('food', client, options) },
+  { label: '카테고리 정렬', method: 'PUT', path: '/api/v1/categories/order', status: 200,
+    body: { type: 'expense', categoryIds: ['food'] }, payload: [category],
+    run: (client, options) => categories.updateCategoryOrder({ type: 'expense', categoryIds: ['food'] }, client, options) },
 ]
 
 function errorIs(code: string, status?: number) {

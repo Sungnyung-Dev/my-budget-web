@@ -1,6 +1,10 @@
 import { sumAmounts } from './ledger.ts'
 import type { Category, Totals, Transaction } from './types.ts'
 
+export function orderedCategories<T extends Category>(categories: readonly T[]): T[] {
+  return [...categories].sort((a, b) => a.type === b.type ? a.sortOrder - b.sortOrder : a.type === 'expense' ? -1 : 1)
+}
+
 export function getTotals(rows: readonly Transaction[]): Totals {
   const income = sumAmounts(rows.filter((row) => row.type === 'income').map((row) => row.amount))
   const expense = sumAmounts(rows.filter((row) => row.type === 'expense').map((row) => row.amount))

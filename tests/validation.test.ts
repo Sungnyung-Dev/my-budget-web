@@ -51,6 +51,8 @@ test('빈 Ledger도 정상 데이터이며 검증에서 원본 객체를 유지�
 for (const [field, value] of [
   ['id', ''], ['id', 1], ['name', '   '], ['name', '가'.repeat(21)], ['name', null],
   ['type', 'transfer'], ['symbol', 'invalid'],
+  ['sortOrder', undefined], ['sortOrder', null], ['sortOrder', '1'], ['sortOrder', -1],
+  ['sortOrder', 1.5], ['sortOrder', Infinity], ['sortOrder', NaN], ['sortOrder', Number.MAX_SAFE_INTEGER + 1],
 ] as const) {
   test(`잘못된 카테고리 ${field}=${JSON.stringify(value)}를 거부한다`, () => {
     assert.throws(() => validateCategory({ ...createLedger().categories[0], [field]: value }))

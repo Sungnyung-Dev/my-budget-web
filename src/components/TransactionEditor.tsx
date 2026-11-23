@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BottomSheet } from './BottomSheet'
 import type { Transaction, TransactionType } from '../domain/types'
 import { parseAmount } from '../domain/ledger'
+import { orderedCategories } from '../domain/selectors'
 import { formatMoney } from '../domain/formatters'
 import type { LedgerController } from '../state/useLedger'
 import { useWriteAction } from '../state/useWriteAction'
@@ -15,7 +16,7 @@ export function TransactionEditor({ date, transaction, ledger, onClose }: {
   onClose: () => void
 }) {
   const { state } = ledger
-  const categories = state.data?.categories ?? []
+  const categories = orderedCategories(state.data?.categories ?? [])
   const busy = state.saving || state.status === 'refreshing'
   const blocked = busy || state.needsRefresh
   const { failure, run } = useWriteAction(onClose)

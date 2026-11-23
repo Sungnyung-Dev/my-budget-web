@@ -13,7 +13,7 @@
 
 ## 데이터 계약과 사용 순서
 
-- `LedgerData`는 `{ version: 1, categories: Category[], transactions: Transaction[] }`입니다. 거래는 `{ id, date, type, amount, categoryId, memo }`, 카테고리는 `{ id, name, type, symbol }` 구조를 유지합니다.
+- `LedgerData`는 `{ version: 1, categories: Category[], transactions: Transaction[] }`입니다. 거래는 `{ id, date, type, amount, categoryId, memo }`, 카테고리는 `{ id, name, type, symbol, sortOrder }` 구조입니다. `sortOrder`는 음수가 아닌 안전한 정수이며 생성 요청에는 포함하지 않습니다. `orderedCategories`는 원본을 변경하지 않고 지출·수입 각각의 `sortOrder`를 적용합니다.
 - 외부 응답은 `validateLedger(unknown)`로 먼저 검증한 뒤 selectors에 전달합니다. 정상적인 빈 배열의 합계와 소비 평균은 0이며, 데이터 누락·형식 오류를 빈 데이터로 바꾸지는 않습니다. 단건/목록 검증은 해당 객체의 필드·중복·금액 한도를 검사하고, 카테고리 존재와 유형 참조는 전체 Ledger에서 검사합니다.
 - 날짜는 실제 존재하는 1900–9999년의 `YYYY-MM-DD`입니다. 날짜 조회·이동 함수에는 검증된 날짜와 유효한 연도·월을 전달합니다. `shiftMonth`는 현지 달력 기준으로 윤년과 월말을 조정하며 UTC 문자열 변환을 사용하지 않습니다. `todayKey`는 기준 `Date`를 주입할 수 있습니다.
 - 금액은 1–999,999,999,999원의 정수입니다. `parseAmount`는 올바른 천 단위 쉼표와 앞뒤 공백을 허용하고 소수·지수·음수·잘못된 쉼표를 거부합니다. 전체 거래 합계는 `Number.MAX_SAFE_INTEGER` 이하여야 합니다.

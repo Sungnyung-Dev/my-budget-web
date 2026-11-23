@@ -1,6 +1,6 @@
 import { isValidDate } from '../../domain/dates.ts'
 import { MAX_AMOUNT } from '../../domain/ledger.ts'
-import type { Category, TransactionInput } from '../../domain/types.ts'
+import type { Category, TransactionInput, TransactionType } from '../../domain/types.ts'
 import { isCategorySymbol, isTransactionType } from '../../domain/validateLedger.ts'
 import { ApiError } from './client.ts'
 
@@ -80,7 +80,7 @@ export function transactionUpdateInput(value: unknown): Partial<TransactionInput
   return body
 }
 
-export function categoryCreateInput(value: unknown): Omit<Category, 'id'> {
+export function categoryCreateInput(value: unknown): Omit<Category, 'id' | 'sortOrder'> {
   const fields = requestFields(value, ['name', 'type', 'symbol'])
   if (!isCategorySymbol(fields.symbol)) return invalidRequest('카테고리 아이콘을 확인해 주세요.')
   return { name: requestName(fields.name), type: requestType(fields.type), symbol: fields.symbol }
@@ -89,4 +89,13 @@ export function categoryCreateInput(value: unknown): Omit<Category, 'id'> {
 export function categoryUpdateInput(value: unknown): Pick<Category, 'name'> {
   const fields = requestFields(value, ['name'])
   return { name: requestName(fields.name) }
+}
+
+export function categoryOrderInput(value: unknown): { type: TransactionType; categoryIds: string[] } {
+  const fields = requestFields(value, ['type', 'categoryIds'])
+  const type = requestType(fields.type)
+  if (!Array.isArray(fields.categoryIds)) return invalidRequest('정렬할 카테고리 목록을 확인해 주세요.')
+  const categoryIds = fields.categoryIds.map(requestId)
+  if (new Set(categoryIds).size !== categoryIds.length) return invalidRequest('정렬할 카테고리 ID가 중복되었습니다.')
+  return { type, categoryIds }
 }
